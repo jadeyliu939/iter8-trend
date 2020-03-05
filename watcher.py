@@ -39,6 +39,11 @@ class Experiment:
 				self.queryTemplate = e['metrics'][m]['query_template']
 				break
 
+		# These are pre-defined to deal with the situation that metric data is
+		# no longer retained in Prometheus
+		self.candidateData = 0
+		self.baselineData = 0
+
 	def __str__(self):
 		s = "%s.%s(%s,%s): %s (%s - %s) [ %f ]" % ( \
 			self.namespace, \
