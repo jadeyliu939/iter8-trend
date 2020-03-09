@@ -7,8 +7,11 @@ from kubernetes.client.rest import ApiException
 from dateutil.parser import parse
 from datetime import datetime, timezone, timedelta
 from string import Template
+from prometheus_client import start_http_server
+from prometheus_client.core import GaugeMetricFamily, REGISTRY
 import requests
 import json
+import time
 
 class Experiment:
 	def __init__(self, e):
@@ -24,6 +27,8 @@ class Experiment:
 				self.baseline = e['spec']['targetService']['baseline']
 			if 'candidate' in e['spec']['targetService']:
 				self.candidate = e['spec']['targetService']['candidate']
+			if 'name' in e['spec']['targetService']:
+				self.serviceName = e['spec']['targetService']['name']
 
 		if 'status' in e and 'conditions' in e['status']:
 			for c in e['status']['conditions']:
@@ -45,9 +50,10 @@ class Experiment:
 		self.baselineData = 0
 
 	def __str__(self):
-		s = "%s.%s(%s,%s): %s (%s - %s) [ %f ]" % ( \
+		s = "%s.%s(service: %s, baseline: %s, candidate: %s): %s (%s - %s) [ %f ]" % ( \
 			self.namespace, \
 			self.name, \
+			self.serviceName, \
 			self.baseline, \
 			self.candidate, \
 			self.phase, \
@@ -102,6 +108,9 @@ class Experiment:
 	def getCandidateData(self):
 		return self.candidateData
 
+	def serviceName(self):
+		return self.serviceName
+
 	def startTime(self):
 		return self.startTime
 
@@ -155,10 +164,27 @@ class Iter8Watcher:
 						if m['destination_workload'] == self.experiments[exp].candidate:
 							self.experiments[exp].setCandidateData(v[1])
 
+	def startServer(self):
+		start_http_server(8888)
+		REGISTRY.register(self)
+		while True:
+			time.sleep(1)
+
+	def collect(self):
+		g = GaugeMetricFamily('iter8_trend', '', labels=['namespace', 'name'])
+		for exp in self.experiments:
+			g.add_metric([self.experiments[exp].namespace, 
+						self.experiments[exp].name], 
+						float(self.experiments[exp].candidateData),
+						(datetime.now() - timedelta(minutes=59)).timestamp())
+						#parse(self.experiments[exp].endTime).timestamp())
+		yield g
+
 	def run(self):
 		self.loadDataFromCluster()
 		self.queryPrometheus()
 		self.printDataFromCluster()
+		self.startServer()
 		pass
 
 if __name__ == '__main__':
