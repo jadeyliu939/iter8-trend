@@ -12,6 +12,7 @@ from prometheus_client.core import GaugeMetricFamily, REGISTRY
 import requests
 import json
 import time
+import threading
 
 class Experiment:
 	def __init__(self, e):
@@ -19,6 +20,8 @@ class Experiment:
 			self.namespace = e['metadata']['namespace']
 		if 'metadata' in e and 'name' in e['metadata']:
 			self.name = e['metadata']['name']
+		if 'metadata' in e and 'resourceVersion' in e['metadata']:
+			self.resourceVersion = e['metadata']['resourceVersion']
 		if 'status' in e and 'phase' in e['status']:
 			self.phase = e['status']['phase']
 
@@ -50,7 +53,7 @@ class Experiment:
 		self.baselineData = 0
 
 	def __str__(self):
-		s = "%s.%s(service: %s, baseline: %s, candidate: %s): %s (%s - %s) [ %f ]" % ( \
+		s = "%s.%s(service:%s, baseline:%s, candidate:%s): %s (%s - %s) [%f]" % ( \
 			self.namespace, \
 			self.name, \
 			self.serviceName, \
@@ -89,6 +92,9 @@ class Experiment:
 
 	def phase(self):
 		return self.phase
+
+	def resourceVersion(self):
+		return self.resourceVersion
 
 	def baseline(self):
 		return self.baseline
@@ -130,8 +136,8 @@ class Iter8Watcher:
 
 		# All experiments in the cluster
 		self.experiments = dict()
-
-	def loadDataFromCluster(self):
+		
+	def loadExpFromCluster(self):
 		try:
 			response = self.kubeapi.list_cluster_custom_object(
 				group = 'iter8.tools',
@@ -142,27 +148,27 @@ class Iter8Watcher:
 				exp = Experiment(e)
 				if exp.phase == 'Completed':
 					self.experiments[exp.namespace + ':' + exp.name] = exp
+					self.queryPrometheus(exp)
+					self.printExpFromCluster(exp)
 	
 		except ApiException as e:
-			print("Exception when calling CustomObjectApi->get_cluster_custom_object: %s\n" % e)
+			print("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
 
-	def printDataFromCluster(self):
-		for exp in self.experiments:
-			print(self.experiments[exp])
+	def printExpFromCluster(self, exp):
+		print(exp)
 	
-	def queryPrometheus(self):
-		for exp in self.experiments:
-			params = {'query': self.experiments[exp].getQueryStr()}
-			response = requests.get(self.prometheusURL, params=params).json()
-			if 'data' in response and 'result' in response['data']:
-				for res in response['data']['result']:
-					if 'metric' in res and 'value' in res:
-						m = res['metric']
-						v = res['value']
-						if m['destination_workload'] == self.experiments[exp].baseline:
-							self.experiments[exp].setBaselineData(v[1])
-						if m['destination_workload'] == self.experiments[exp].candidate:
-							self.experiments[exp].setCandidateData(v[1])
+	def queryPrometheus(self, exp):
+		params = {'query': exp.getQueryStr()}
+		response = requests.get(self.prometheusURL, params=params).json()
+		if 'data' in response and 'result' in response['data']:
+			for res in response['data']['result']:
+				if 'metric' in res and 'value' in res:
+					m = res['metric']
+					v = res['value']
+					if m['destination_workload'] == exp.baseline:
+						exp.setBaselineData(v[1])
+					if m['destination_workload'] == exp.candidate:
+						exp.setCandidateData(v[1])
 
 	def startServer(self):
 		start_http_server(8888)
@@ -171,21 +177,52 @@ class Iter8Watcher:
 			time.sleep(1)
 
 	def collect(self):
-		g = GaugeMetricFamily('iter8_trend', '', labels=['namespace', 'name'])
+		g = GaugeMetricFamily('iter8_trend', '', labels=['namespace', 'name', 'service_name', 'time'])
 		for exp in self.experiments:
 			g.add_metric([self.experiments[exp].namespace, 
-						self.experiments[exp].name], 
-						float(self.experiments[exp].candidateData),
-						(datetime.now() - timedelta(minutes=59)).timestamp())
+						self.experiments[exp].name,
+						self.experiments[exp].serviceName,
+						self.experiments[exp].endTime],
+						float(self.experiments[exp].candidateData))
 						#parse(self.experiments[exp].endTime).timestamp())
 		yield g
 
+	def watchExpFromCluster(self):
+		while True:
+			try:
+				response = self.kubeapi.list_cluster_custom_object(
+					group = 'iter8.tools',
+					version = 'v1alpha1',
+					plural = 'experiments')
+				results = json.loads(json.dumps(response, ensure_ascii=False))
+				for e in results['items']:
+					exp = Experiment(e)
+					if exp.namespace + ':' + exp.name in self.experiments:
+						continue
+					if exp.phase == 'Completed':
+						self.experiments[exp.namespace + ':' + exp.name] = exp
+						self.queryPrometheus(exp)
+						self.printExpFromCluster(exp)
+		
+			except ApiException as e:
+				print("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
+
+			time.sleep(30)
+
 	def run(self):
-		self.loadDataFromCluster()
-		self.queryPrometheus()
-		self.printDataFromCluster()
-		self.startServer()
-		pass
+		threads = list()
+		self.loadExpFromCluster()
+
+		t1 = threading.Thread(target=self.startServer, args=())
+		t1.start()
+		threads.append(t1)
+
+		t2 = threading.Thread(target=self.watchExpFromCluster, args=())
+		t2.start()
+		threads.append(t2)
+
+		for t in threads:
+			t.join()
 
 if __name__ == '__main__':
 	watcher = Iter8Watcher('http://localhost:9090')
