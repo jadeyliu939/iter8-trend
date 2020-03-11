@@ -33,13 +33,21 @@ class Experiment:
 			if 'name' in e['spec']['targetService']:
 				self.serviceName = e['spec']['targetService']['name']
 
-		if 'status' in e and 'conditions' in e['status']:
-			for c in e['status']['conditions']:
-				if 'type' in c:
-					if c['type'] == 'RoutingRulesReady':
-						self.startTime = c['lastTransitionTime']
-					if c['type'] == 'ExperimentSucceeded':
-						self.endTime = c['lastTransitionTime']
+		if 'status' in e:
+			if 'conditions' in e['status']:
+				for c in e['status']['conditions']:
+					if 'type' in c:
+						if c['type'] == 'RoutingRulesReady':
+							self.startTime = c['lastTransitionTime']
+						if c['type'] == 'ExperimentSucceeded':
+							self.endTime = c['lastTransitionTime']
+
+			self.completedAndSuccessful = False
+			if 'assessment' in e['status'] and 'conclusions' in e['status']['assessment']:
+				if len(e['status']['assessment']['conclusions']) == 1 and \
+					e['status']['assessment']['conclusions'][0] == 'All success criteria were  met' and \
+					self.phase == 'Completed':
+					self.completedAndSuccessful = True
 
 		if 'metrics' in e:
 			for m in e['metrics']:
@@ -93,6 +101,9 @@ class Experiment:
 	def phase(self):
 		return self.phase
 
+	def completedAndSuccessful(self):
+		return self.completedAndSuccessful
+
 	def resourceVersion(self):
 		return self.resourceVersion
 
@@ -136,7 +147,7 @@ class Iter8Watcher:
 
 		# All experiments in the cluster
 		self.experiments = dict()
-		
+
 	def loadExpFromCluster(self):
 		try:
 			response = self.kubeapi.list_cluster_custom_object(
@@ -146,7 +157,7 @@ class Iter8Watcher:
 			results = json.loads(json.dumps(response, ensure_ascii=False))
 			for e in results['items']:
 				exp = Experiment(e)
-				if exp.phase == 'Completed':
+				if exp.completedAndSuccessful:
 					self.experiments[exp.namespace + ':' + exp.name] = exp
 					self.queryPrometheus(exp)
 					self.printExpFromCluster(exp)
@@ -199,7 +210,7 @@ class Iter8Watcher:
 					exp = Experiment(e)
 					if exp.namespace + ':' + exp.name in self.experiments:
 						continue
-					if exp.phase == 'Completed':
+					if exp.completedAndSuccessful:
 						self.experiments[exp.namespace + ':' + exp.name] = exp
 						self.queryPrometheus(exp)
 						self.printExpFromCluster(exp)
