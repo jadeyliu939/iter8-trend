@@ -160,14 +160,11 @@ class Iter8Watcher:
 				if exp.completedAndSuccessful:
 					self.experiments[exp.namespace + ':' + exp.name] = exp
 					self.queryPrometheus(exp)
-					self.printExpFromCluster(exp)
+					print(exp)
 	
 		except ApiException as e:
 			print("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
 
-	def printExpFromCluster(self, exp):
-		print(exp)
-	
 	def queryPrometheus(self, exp):
 		params = {'query': exp.getQueryStr()}
 		response = requests.get(self.prometheusURL, params=params).json()
@@ -213,7 +210,7 @@ class Iter8Watcher:
 					if exp.completedAndSuccessful:
 						self.experiments[exp.namespace + ':' + exp.name] = exp
 						self.queryPrometheus(exp)
-						self.printExpFromCluster(exp)
+						print(exp)
 		
 			except ApiException as e:
 				print("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
