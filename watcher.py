@@ -14,6 +14,9 @@ import json
 import time
 import threading
 
+# TODO: Configure logging
+
+# Represents an Iter8 Experiment Custom Resource
 class Experiment:
 	def __init__(self, e):
 		if 'metadata' in e and 'namespace' in e['metadata']:
@@ -47,11 +50,12 @@ class Experiment:
 				if len(e['status']['assessment']['conclusions']) == 1 and \
 					e['status']['assessment']['conclusions'][0] == 'All success criteria were  met' and \
 					self.phase == 'Completed':
+					# Only a Completed and Successful experiment is promoted
 					self.completedAndSuccessful = True
 
 		if 'metrics' in e:
 			for m in e['metrics']:
-				# TODO: for now, we assume there is only one metric defined
+				# TODO: for now, we assume there is only one metric defined (does for loop return items in order?)
 				self.queryTemplate = e['metrics'][m]['query_template']
 				break
 
@@ -60,6 +64,7 @@ class Experiment:
 		self.candidateData = 0
 		self.baselineData = 0
 
+	# Prints an Experiment Custom Resource
 	def __str__(self):
 		s = "%s.%s(service:%s, baseline:%s, candidate:%s): %s (%s - %s) [%f]" % ( \
 			self.namespace, \
@@ -73,6 +78,8 @@ class Experiment:
 			float(self.candidateData))
 		return s
 
+	# Convert a query template from an Experiment Custom Resource
+	# to a Prometheus query used to query for a summary metric
 	def getQueryStr(self):
 		start = parse(self.startTime)
 		end = parse(self.endTime)
@@ -137,6 +144,9 @@ class Experiment:
 	def queryTemplate(self):
 		return queryTemplate
 
+# This is the main engine that watches a K8s cluster for Iter8 Experiment 
+# Custom Resources and query Prometheus for summary performance metrics
+# It also provides a Prometheus scrape target endpoint
 class Iter8Watcher:
 	def __init__(self, prometheusURL):
 		self.prometheusURL = prometheusURL + '/api/v1/query'
@@ -148,6 +158,8 @@ class Iter8Watcher:
 		# All experiments in the cluster
 		self.experiments = dict()
 
+	# At the start, we read all the Experiment Custom Resources in 
+	# the cluster and query Prometheus for their summary metric data
 	def loadExpFromCluster(self):
 		try:
 			response = self.kubeapi.list_cluster_custom_object(
@@ -165,6 +177,7 @@ class Iter8Watcher:
 		except ApiException as e:
 			print("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
 
+	# Calls Prometheus to retrieve summary metric data for an Experiment
 	def queryPrometheus(self, exp):
 		params = {'query': exp.getQueryStr()}
 		response = requests.get(self.prometheusURL, params=params).json()
@@ -178,6 +191,7 @@ class Iter8Watcher:
 					if m['destination_workload'] == exp.candidate:
 						exp.setCandidateData(v[1])
 
+	# Start a Prometheus scrape target endpoint
 	def startServer(self):
 		start_http_server(8888)
 		REGISTRY.register(self)
@@ -195,6 +209,8 @@ class Iter8Watcher:
 						#parse(self.experiments[exp].endTime).timestamp())
 		yield g
 
+	# Monitors for new Experiments in the cluster and retrieves their
+	# summary metrics data from Prometheus
 	def watchExpFromCluster(self):
 		while True:
 			try:
@@ -221,10 +237,12 @@ class Iter8Watcher:
 		threads = list()
 		self.loadExpFromCluster()
 
+		# Start Prometheus scrape target endpoint
 		t1 = threading.Thread(target=self.startServer, args=())
 		t1.start()
 		threads.append(t1)
 
+		# Start monitoring Iter8 Experiment Custom Resources
 		t2 = threading.Thread(target=self.watchExpFromCluster, args=())
 		t2.start()
 		threads.append(t2)
@@ -232,6 +250,7 @@ class Iter8Watcher:
 		for t in threads:
 			t.join()
 
+# TODO: Parameterize hostname, port number, monitoring period, etc.
 if __name__ == '__main__':
 	watcher = Iter8Watcher('http://localhost:9090')
 	watcher.run()
