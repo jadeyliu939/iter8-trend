@@ -13,8 +13,13 @@ import requests
 import json
 import time
 import threading
+import logging
 
-# TODO: Configure logging
+logging.basicConfig(level=logging.INFO,
+		format='%(asctime)s %(levelname)-8s %(message)s',
+		datefmt='%a, %d %b %Y %H:%M:%S',
+		filemode='a')
+logger = logging.getLogger(__name__)
 
 # Represents an Iter8 Experiment Custom Resource
 class Experiment:
@@ -172,10 +177,10 @@ class Iter8Watcher:
 				if exp.completedAndSuccessful:
 					self.experiments[exp.namespace + ':' + exp.name] = exp
 					self.queryPrometheus(exp)
-					print(exp)
+					logger.info(exp)
 	
 		except ApiException as e:
-			print("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
+			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
 
 	# Calls Prometheus to retrieve summary metric data for an Experiment
 	def queryPrometheus(self, exp):
@@ -195,6 +200,7 @@ class Iter8Watcher:
 	def startServer(self):
 		start_http_server(8888)
 		REGISTRY.register(self)
+		logger.info("Prometheus scrape target started")
 		while True:
 			time.sleep(1)
 
@@ -212,6 +218,7 @@ class Iter8Watcher:
 	# Monitors for new Experiments in the cluster and retrieves their
 	# summary metrics data from Prometheus
 	def watchExpFromCluster(self):
+		logger.info("Starting to watch Kubernetes cluster...")
 		while True:
 			try:
 				response = self.kubeapi.list_cluster_custom_object(
@@ -226,10 +233,10 @@ class Iter8Watcher:
 					if exp.completedAndSuccessful:
 						self.experiments[exp.namespace + ':' + exp.name] = exp
 						self.queryPrometheus(exp)
-						print(exp)
+						logger.info(exp)
 		
 			except ApiException as e:
-				print("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
+				logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
 
 			time.sleep(30)
 
