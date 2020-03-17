@@ -166,6 +166,7 @@ class Iter8Watcher:
 	# At the start, we read all the Experiment Custom Resources in 
 	# the cluster and query Prometheus for their summary metric data
 	def loadExpFromCluster(self):
+		logger.info("Loading data from Kubernetes cluster...")
 		try:
 			response = self.kubeapi.list_cluster_custom_object(
 				group = 'iter8.tools',
@@ -200,7 +201,7 @@ class Iter8Watcher:
 	def startServer(self):
 		start_http_server(8888)
 		REGISTRY.register(self)
-		logger.info("Prometheus scrape target started")
+		logger.info("Starting Prometheus scrape target...")
 		while True:
 			time.sleep(1)
 
