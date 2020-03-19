@@ -3,7 +3,6 @@
 
 from __future__ import print_function
 from kubernetes import client, config
-from kubernetes.client.rest import ApiException
 from dateutil.parser import parse
 from datetime import datetime, timezone, timedelta
 from string import Template
@@ -50,13 +49,13 @@ class Experiment:
 						if c['type'] == 'ExperimentSucceeded':
 							self.endTime = c['lastTransitionTime']
 
-			self.completedAndSuccessful = False
+			self.isCompletedAndSuccessful = False
 			if 'assessment' in e['status'] and 'conclusions' in e['status']['assessment']:
 				if len(e['status']['assessment']['conclusions']) == 1 and \
 					e['status']['assessment']['conclusions'][0] == 'All success criteria were  met' and \
 					self.phase == 'Completed':
 					# Only a Completed and Successful experiment is promoted
-					self.completedAndSuccessful = True
+					self.isCompletedAndSuccessful = True
 
 		if 'metrics' in e:
 			for m in e['metrics']:
@@ -113,8 +112,8 @@ class Experiment:
 	def phase(self):
 		return self.phase
 
-	def completedAndSuccessful(self):
-		return self.completedAndSuccessful
+	def isCompletedAndSuccessful(self):
+		return self.isCompletedAndSuccessful
 
 	def resourceVersion(self):
 		return self.resourceVersion
@@ -122,6 +121,8 @@ class Experiment:
 	def baseline(self):
 		return self.baseline
 
+	# Set summary metric data for the baseline version
+	# Default is 0 or if Prometheus has no data (expired)
 	def setBaselineData(self, data):
 		self.baselineData = data
 
@@ -131,6 +132,8 @@ class Experiment:
 	def candidate(self):
 		return self.candidate
 
+	# Set summary metric data for candidate version
+	# Default is 0 or if Prometheus has no data (expired)
 	def setCandidateData(self, data):
 		self.candidateData = data
 
@@ -175,12 +178,12 @@ class Iter8Watcher:
 			results = json.loads(json.dumps(response, ensure_ascii=False))
 			for e in results['items']:
 				exp = Experiment(e)
-				if exp.completedAndSuccessful:
+				if exp.isCompletedAndSuccessful:
 					self.experiments[exp.namespace + ':' + exp.name] = exp
 					self.queryPrometheus(exp)
 					logger.info(exp)
 	
-		except ApiException as e:
+		except client.rest.ApiException as e:
 			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
 
 	# Calls Prometheus to retrieve summary metric data for an Experiment
@@ -213,7 +216,6 @@ class Iter8Watcher:
 						self.experiments[exp].serviceName,
 						self.experiments[exp].endTime],
 						float(self.experiments[exp].candidateData))
-						#parse(self.experiments[exp].endTime).timestamp())
 		yield g
 
 	# Monitors for new Experiments in the cluster and retrieves their
@@ -231,12 +233,12 @@ class Iter8Watcher:
 					exp = Experiment(e)
 					if exp.namespace + ':' + exp.name in self.experiments:
 						continue
-					if exp.completedAndSuccessful:
+					if exp.isCompletedAndSuccessful:
 						self.experiments[exp.namespace + ':' + exp.name] = exp
 						self.queryPrometheus(exp)
 						logger.info(exp)
 		
-			except ApiException as e:
+			except client.rest.ApiException as e:
 				logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
 
 			time.sleep(30)
