@@ -8,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 from string import Template
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, REGISTRY
+from signal import signal, SIGINT
 import requests
 import json
 import time
@@ -244,21 +245,28 @@ class Iter8Watcher:
 			time.sleep(30)
 
 	def run(self):
+		# Handles ctrl-c signal
+		signal(SIGINT, sighandler)
+
 		threads = list()
 		self.loadExpFromCluster()
 
 		# Start Prometheus scrape target endpoint
-		t1 = threading.Thread(target=self.startServer, args=())
+		t1 = threading.Thread(target=self.startServer, daemon=True, args=())
 		t1.start()
 		threads.append(t1)
 
 		# Start monitoring Iter8 Experiment Custom Resources
-		t2 = threading.Thread(target=self.watchExpFromCluster, args=())
+		t2 = threading.Thread(target=self.watchExpFromCluster, daemon=True, args=())
 		t2.start()
 		threads.append(t2)
 
 		for t in threads:
 			t.join()
+
+def sighandler(signalReceived, frame):
+	logger.warning('SIGINT received')
+	exit(0)
 
 # TODO: Parameterize hostname, port number, monitoring period, etc.
 if __name__ == '__main__':
