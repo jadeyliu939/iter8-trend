@@ -14,6 +14,7 @@ import json
 import time
 import threading
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO,
 		format='%(asctime)s %(levelname)-8s %(message)s',
@@ -185,21 +186,27 @@ class Iter8Watcher:
 					logger.info(exp)
 	
 		except client.rest.ApiException as e:
-			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
+			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
+		except Exception as e:
+			logger.error("Unexpected error: %s" % e)
+			exit(1)
 
 	# Calls Prometheus to retrieve summary metric data for an Experiment
 	def queryPrometheus(self, exp):
 		params = {'query': exp.getQueryStr()}
-		response = requests.get(self.prometheusURL, params=params).json()
-		if 'data' in response and 'result' in response['data']:
-			for res in response['data']['result']:
-				if 'metric' in res and 'value' in res:
-					m = res['metric']
-					v = res['value']
-					if m['destination_workload'] == exp.baseline:
-						exp.setBaselineData(v[1])
-					if m['destination_workload'] == exp.candidate:
-						exp.setCandidateData(v[1])
+		try:
+			response = requests.get(self.prometheusURL, params=params).json()
+			if 'data' in response and 'result' in response['data']:
+				for res in response['data']['result']:
+					if 'metric' in res and 'value' in res:
+						m = res['metric']
+						v = res['value']
+						if m['destination_workload'] == exp.baseline:
+							exp.setBaselineData(v[1])
+						if m['destination_workload'] == exp.candidate:
+							exp.setCandidateData(v[1])
+		except requests.exceptions.RequestException as e:
+			logger.warning("Problem querying Prometheus (%s): %s" % (self.prometheusURL, e))
 
 	# Start a Prometheus scrape target endpoint
 	def startServer(self):
@@ -240,7 +247,11 @@ class Iter8Watcher:
 						logger.info(exp)
 		
 			except client.rest.ApiException as e:
-				logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s\n" % e)
+				logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
+			except Exception as e:
+				# In case we are having problem connecting to K8s, we just quit
+				logger.error("Unexpected error: %s" % e)
+				os.kill(os.getpid(), SIGINT)
 
 			time.sleep(30)
 
