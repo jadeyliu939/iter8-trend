@@ -15,6 +15,7 @@ import time
 import threading
 import logging
 import os
+import argparse
 
 logging.basicConfig(level=logging.INFO,
 		format='%(asctime)s %(levelname)-8s %(message)s',
@@ -158,8 +159,16 @@ class Experiment:
 # Custom Resources and query Prometheus for summary performance metrics
 # It also provides a Prometheus scrape target endpoint
 class Iter8Watcher:
-	def __init__(self, prometheusURL):
-		self.prometheusURL = prometheusURL + '/api/v1/query'
+	def __init__(self, args):
+
+		# Prometheus URL that is used to gather metrics data
+		self.prometheusURL = args.prometheus_url + '/api/v1/query'
+
+		# Localhost port number used for Prometheus to scrape trend data
+		self.scrapePort = args.scrape_port
+
+		# Number of seconds between listing Iter8 Experiment CRs in K8s cluster
+		self.k8sFreq = args.k8s_freq
 
 		# Initialize kubernetes.client.configuration from kubeconfig
 		config.load_kube_config()
@@ -210,7 +219,7 @@ class Iter8Watcher:
 
 	# Start a Prometheus scrape target endpoint
 	def startServer(self):
-		start_http_server(8888)
+		start_http_server(self.scrapePort)
 		REGISTRY.register(self)
 		logger.info("Starting Prometheus scrape target...")
 		while True:
@@ -253,7 +262,7 @@ class Iter8Watcher:
 				logger.error("Unexpected error: %s" % e)
 				os.kill(os.getpid(), SIGINT)
 
-			time.sleep(30)
+			time.sleep(self.k8sFreq)
 
 	def run(self):
 		# Handles ctrl-c signal
@@ -279,7 +288,16 @@ def sighandler(signalReceived, frame):
 	logger.warning('SIGINT received')
 	exit(0)
 
-# TODO: Parameterize hostname, port number, monitoring period, etc.
+def parseArgs():
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--scrape-port", default=8888, type=int, help="Target port number for Prometheus scraping")
+	parser.add_argument("--prometheus-url", default="http://localhost:9090", help="Prometheus URL to get summary metrics data")
+	parser.add_argument("--k8s-freq", default=30, type=int, help="Frequency to monitor K8s cluster for Iter8 Experiment Custom Resources")
+	args = parser.parse_args()
+	logger.info(args)
+	return args
+
 if __name__ == '__main__':
-	watcher = Iter8Watcher('http://localhost:9090')
+	args = parseArgs()
+	watcher = Iter8Watcher(args)
 	watcher.run()
