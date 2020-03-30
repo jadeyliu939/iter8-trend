@@ -18,3 +18,6 @@ cd iter8-trend/
 ```
 kubectl -n iter8 apply -f install/deployment.yml
 ```
+
+### Visualize
+Import `grafana/iter8-trend.json` into the Grafana dashboard
