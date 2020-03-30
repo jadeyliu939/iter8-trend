@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iter8-trend
+  namespace: iter8
+  labels:
+    app: iter8-trend
+spec:
+  selector:
+    matchLabels:
+      app: iter8-trend
+  template:
+    metadata:
+      labels:
+        app: iter8-trend
+    spec:
+      serviceAccountName: controller-manager
+      containers:
+      - command: ["/usr/local/bin/python", "/watcher.py"]
+        imagePullPolicy: Always
+        image: haih/iter8-trend:latest
+        name: iter8-trend
+      terminationGracePeriodSeconds: 10

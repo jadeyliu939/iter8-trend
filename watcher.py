@@ -170,8 +170,12 @@ class Iter8Watcher:
 		# Number of seconds between listing Iter8 Experiment CRs in K8s cluster
 		self.k8sFreq = args.k8s_freq
 
-		# Initialize kubernetes.client.configuration from kubeconfig
-		config.load_kube_config()
+		# Initialize kubernetes.client.configuration either from a config file or
+		# when running within a pod using a service account
+		try:
+			config.load_kube_config()
+		except:
+			config.load_incluster_config()
 		self.kubeapi = client.CustomObjectsApi()
 
 		# All experiments in the cluster
@@ -291,7 +295,7 @@ def sighandler(signalReceived, frame):
 def parseArgs():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--scrape-port", default=8888, type=int, help="Target port number for Prometheus scraping")
-	parser.add_argument("--prometheus-url", default="http://localhost:9090", help="Prometheus URL to get summary metrics data")
+	parser.add_argument("--prometheus-url", default="http://prometheus.istio-system:9090", help="Prometheus URL to get summary metrics data")
 	parser.add_argument("--k8s-freq", default=30, type=int, help="Frequency to monitor K8s cluster for Iter8 Experiment Custom Resources")
 	args = parser.parse_args()
 	logger.info(args)
