@@ -20,4 +20,8 @@ spec:
         imagePullPolicy: Always
         image: haih/iter8-trend:latest
         name: iter8-trend
+        ports:
+          - name: http
+            containerPort: 8888
+            protocol: TCP
       terminationGracePeriodSeconds: 10
