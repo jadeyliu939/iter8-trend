@@ -16,6 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 1,
+  "iteration": 1585769230007,
   "links": [],
   "panels": [
     {
@@ -62,7 +63,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service'}[7w])) by (time)",
+          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service'}[7w])) by (time) > 0",
           "format": "time_series",
           "instant": false,
           "refId": "A"
@@ -277,7 +278,7 @@
       ],
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service'}[7w])) by (namespace, name, time)",
+          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service'}[7w])) by (namespace, name, time) > 0",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
@@ -361,7 +362,7 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
@@ -381,5 +382,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 12
+  "version": 13
 }
