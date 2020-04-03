@@ -129,9 +129,6 @@ class Experiment:
 	def setBaselineData(self, data):
 		self.baselineData = data
 
-	def getBaselineData(self):
-		return self.baselineData
-
 	def candidate(self):
 		return self.candidate
 
@@ -139,9 +136,6 @@ class Experiment:
 	# Default is 0 or if Prometheus has no data (expired)
 	def setCandidateData(self, data):
 		self.candidateData = data
-
-	def getCandidateData(self):
-		return self.candidateData
 
 	def serviceName(self):
 		return self.serviceName
@@ -215,6 +209,7 @@ class Iter8Watcher:
 						m = res['metric']
 						v = res['value']
 						if m['destination_workload'] == exp.baseline:
+							# v[0] is the timestamp, v[1] is the value here
 							exp.setBaselineData(v[1])
 						if m['destination_workload'] == exp.candidate:
 							exp.setCandidateData(v[1])
