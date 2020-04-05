@@ -62,14 +62,22 @@ class Experiment:
 
 		if 'metrics' in e:
 			for m in e['metrics']:
-				# TODO: for now, we assume there is only one metric defined (does for loop return items in order?)
 				self.queryTemplate = e['metrics'][m]['query_template']
-				break
+				self.absentValue = e['metrics'][m]['absent_value']
 
-		# These are pre-defined to deal with the situation that metric data is
-		# no longer retained in Prometheus
-		self.candidateData = 0
-		self.baselineData = 0
+				# In case Prometheus doesn't return data either because i) the data is no longer retained
+				# or ii) there is no such data collected, we use its absent_value defined for that metric
+				try:
+					self.baselineData = float(self.absentValue)
+				except:
+					self.baselineData = -1
+				try:
+					self.candidateData = float(self.absentValue)
+				except:
+					self.candidateData = -1
+
+				# TODO: for now, we assume there is only one metric defined (does for loop return items in order?)
+				break
 
 	# Prints an Experiment Custom Resource
 	def __str__(self):
@@ -191,7 +199,6 @@ class Iter8Watcher:
 					self.experiments[exp.namespace + ':' + exp.name] = exp
 					self.queryPrometheus(exp)
 					logger.info(exp)
-	
 		except client.rest.ApiException as e:
 			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
 		except Exception as e:
