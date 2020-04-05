@@ -30,8 +30,6 @@ class Experiment:
 			self.namespace = e['metadata']['namespace']
 		if 'metadata' in e and 'name' in e['metadata']:
 			self.name = e['metadata']['name']
-		if 'metadata' in e and 'resourceVersion' in e['metadata']:
-			self.resourceVersion = e['metadata']['resourceVersion']
 		if 'status' in e and 'phase' in e['status']:
 			self.phase = e['status']['phase']
 
@@ -70,6 +68,7 @@ class Experiment:
 				try:
 					self.baselineData = float(self.absentValue)
 				except:
+					# Set it to arbitrary value, hope it doesn't conflict with a real value
 					self.baselineData = -1
 				try:
 					self.candidateData = float(self.absentValue)
@@ -114,48 +113,15 @@ class Experiment:
 		query = qt.substitute(**kwargs)
 		return query
 
-	def namespace(self):
-		return self.namespace
-
-	def name(self):
-		return self.name
-
-	def phase(self):
-		return self.phase
-
-	def isCompletedAndSuccessful(self):
-		return self.isCompletedAndSuccessful
-
-	def resourceVersion(self):
-		return self.resourceVersion
-
-	def baseline(self):
-		return self.baseline
-
 	# Set summary metric data for the baseline version
 	# Default is 0 or if Prometheus has no data (expired)
 	def setBaselineData(self, data):
 		self.baselineData = data
 
-	def candidate(self):
-		return self.candidate
-
 	# Set summary metric data for candidate version
 	# Default is 0 or if Prometheus has no data (expired)
 	def setCandidateData(self, data):
 		self.candidateData = data
-
-	def serviceName(self):
-		return self.serviceName
-
-	def startTime(self):
-		return self.startTime
-
-	def endTime(self):
-		return self.endTime
-
-	def queryTemplate(self):
-		return queryTemplate
 
 # This is the main engine that watches a K8s cluster for Iter8 Experiment 
 # Custom Resources and query Prometheus for summary performance metrics
