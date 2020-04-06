@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 1,
-  "iteration": 1585769230007,
+  "iteration": 1586183534125,
   "links": [],
   "panels": [
     {
@@ -63,7 +63,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service'}[7w])) by (time) > 0",
+          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[7w])) by (time, metric) >= 0",
           "format": "time_series",
           "instant": false,
           "refId": "A"
@@ -278,7 +278,7 @@
       ],
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service'}[7w])) by (namespace, name, time) > 0",
+          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[7w])) by (namespace, name, metric, time) >= 0",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
@@ -292,6 +292,7 @@
       "type": "table"
     }
   ],
+  "refresh": "10s",
   "schemaVersion": 22,
   "style": "dark",
   "tags": [],
@@ -300,6 +301,7 @@
       {
         "allValue": null,
         "current": {
+          "selected": true,
           "text": "bookinfo-iter8",
           "value": "bookinfo-iter8"
         },
@@ -331,6 +333,7 @@
       {
         "allValue": null,
         "current": {
+          "selected": true,
           "text": "reviews",
           "value": "reviews"
         },
@@ -358,11 +361,48 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "iter8_latency",
+          "value": "iter8_latency"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(iter8_trend, metric)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Metric",
+        "multi": false,
+        "name": "metric",
+        "options": [
+          {
+            "selected": false,
+            "text": "iter8_error_rate",
+            "value": "iter8_error_rate"
+          },
+          {
+            "selected": true,
+            "text": "iter8_latency",
+            "value": "iter8_latency"
+          }
+        ],
+        "query": "label_values(iter8_trend, metric)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
       }
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {
@@ -382,5 +422,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 13
+  "version": 14
 }
