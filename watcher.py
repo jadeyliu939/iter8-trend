@@ -58,29 +58,30 @@ class Experiment:
 					# Only a Completed and Successful experiment is promoted
 					self.isCompletedAndSuccessful = True
 
+		self.queryTemplate = {}
+		self.absentValue = {}
+		self.baselineData = {}
+		self.candidateData = {}
 		if 'metrics' in e:
 			for m in e['metrics']:
-				self.queryTemplate = e['metrics'][m]['query_template']
-				self.absentValue = e['metrics'][m]['absent_value']
+				self.queryTemplate[m] = e['metrics'][m]['query_template']
+				self.absentValue[m] = e['metrics'][m]['absent_value']
 
 				# In case Prometheus doesn't return data either because i) the data is no longer retained
 				# or ii) there is no such data collected, we use its absent_value defined for that metric
 				try:
-					self.baselineData = float(self.absentValue)
+					self.baselineData[m] = float(self.absentValue[m])
 				except:
 					# Set it to arbitrary value, hope it doesn't conflict with a real value
-					self.baselineData = -1
+					self.baselineData[m] = -1
 				try:
-					self.candidateData = float(self.absentValue)
+					self.candidateData[m] = float(self.absentValue[m])
 				except:
-					self.candidateData = -1
-
-				# TODO: for now, we assume there is only one metric defined (does for loop return items in order?)
-				break
+					self.candidateData[m] = -1
 
 	# Prints an Experiment Custom Resource
 	def __str__(self):
-		s = "%s.%s(service:%s, baseline:%s, candidate:%s): %s (%s - %s) [%f]" % ( \
+		s = "%s.%s(service:%s, baseline:%s, candidate:%s): %s (%s - %s) [" % ( \
 			self.namespace, \
 			self.name, \
 			self.serviceName, \
@@ -88,13 +89,13 @@ class Experiment:
 			self.candidate, \
 			self.phase, \
 			self.startTime, \
-			self.endTime, \
-			float(self.candidateData))
+			self.endTime)
+		s += "%s]" % self.candidateData
 		return s
 
 	# Convert a query template from an Experiment Custom Resource
 	# to a Prometheus query used to query for a summary metric
-	def getQueryStr(self):
+	def getQueryStr(self, metric):
 		start = parse(self.startTime)
 		end = parse(self.endTime)
 		now = datetime.now(timezone.utc)
@@ -109,19 +110,19 @@ class Experiment:
             "offset_str": f" offset {offsetStr}" if offsetStr else "",
             "entity_labels": entityLabels,
         }
-		qt = Template(self.queryTemplate)
+		qt = Template(self.queryTemplate[metric])
 		query = qt.substitute(**kwargs)
 		return query
 
 	# Set summary metric data for the baseline version
 	# Default is 0 or if Prometheus has no data (expired)
-	def setBaselineData(self, data):
-		self.baselineData = data
+	def setBaselineData(self, metric, data):
+		self.baselineData[metric] = data
 
 	# Set summary metric data for candidate version
 	# Default is 0 or if Prometheus has no data (expired)
-	def setCandidateData(self, data):
-		self.candidateData = data
+	def setCandidateData(self, metric, data):
+		self.candidateData[metric] = data
 
 # This is the main engine that watches a K8s cluster for Iter8 Experiment 
 # Custom Resources and query Prometheus for summary performance metrics
@@ -163,8 +164,9 @@ class Iter8Watcher:
 				exp = Experiment(e)
 				if exp.isCompletedAndSuccessful:
 					self.experiments[exp.namespace + ':' + exp.name] = exp
-					self.queryPrometheus(exp)
-					logger.info(exp)
+					for metric in exp.queryTemplate:
+						self.queryPrometheus(metric, exp)
+						logger.info(exp)
 		except client.rest.ApiException as e:
 			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
 		except Exception as e:
@@ -172,8 +174,8 @@ class Iter8Watcher:
 			exit(1)
 
 	# Calls Prometheus to retrieve summary metric data for an Experiment
-	def queryPrometheus(self, exp):
-		params = {'query': exp.getQueryStr()}
+	def queryPrometheus(self, metric, exp):
+		params = {'query': exp.getQueryStr(metric)}
 		try:
 			response = requests.get(self.prometheusURL, params=params).json()
 			if 'data' in response and 'result' in response['data']:
@@ -183,9 +185,9 @@ class Iter8Watcher:
 						v = res['value']
 						if m['destination_workload'] == exp.baseline:
 							# v[0] is the timestamp, v[1] is the value here
-							exp.setBaselineData(v[1])
+							exp.setBaselineData(metric, v[1])
 						if m['destination_workload'] == exp.candidate:
-							exp.setCandidateData(v[1])
+							exp.setCandidateData(metric, v[1])
 		except requests.exceptions.RequestException as e:
 			logger.warning("Problem querying Prometheus (%s): %s" % (self.prometheusURL, e))
 
@@ -198,13 +200,15 @@ class Iter8Watcher:
 			time.sleep(1)
 
 	def collect(self):
-		g = GaugeMetricFamily('iter8_trend', '', labels=['namespace', 'name', 'service_name', 'time'])
+		g = GaugeMetricFamily('iter8_trend', '', labels=['namespace', 'name', 'service_name', 'time', 'metric'])
 		for exp in self.experiments:
-			g.add_metric([self.experiments[exp].namespace, 
-						self.experiments[exp].name,
-						self.experiments[exp].serviceName,
-						self.experiments[exp].endTime],
-						float(self.experiments[exp].candidateData))
+			for metric in self.experiments[exp].queryTemplate:
+				g.add_metric([self.experiments[exp].namespace, 
+							self.experiments[exp].name,
+							self.experiments[exp].serviceName,
+							self.experiments[exp].endTime,
+							metric],
+							float(self.experiments[exp].candidateData[metric]))
 		yield g
 
 	# Monitors for new Experiments in the cluster and retrieves their
@@ -224,8 +228,9 @@ class Iter8Watcher:
 						continue
 					if exp.isCompletedAndSuccessful:
 						self.experiments[exp.namespace + ':' + exp.name] = exp
-						self.queryPrometheus(exp)
-						logger.info(exp)
+						for metric in exp.queryTemplate:
+							self.queryPrometheus(metric, exp)
+							logger.info(exp)
 		
 			except client.rest.ApiException as e:
 				logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
