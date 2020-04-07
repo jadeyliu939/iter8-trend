@@ -166,7 +166,7 @@ class Iter8Watcher:
 					self.experiments[exp.namespace + ':' + exp.name] = exp
 					for metric in exp.queryTemplate:
 						self.queryPrometheus(metric, exp)
-						logger.info(exp)
+					logger.info(exp)
 		except client.rest.ApiException as e:
 			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
 		except Exception as e:
@@ -230,7 +230,7 @@ class Iter8Watcher:
 						self.experiments[exp.namespace + ':' + exp.name] = exp
 						for metric in exp.queryTemplate:
 							self.queryPrometheus(metric, exp)
-							logger.info(exp)
+						logger.info(exp)
 		
 			except client.rest.ApiException as e:
 				logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
