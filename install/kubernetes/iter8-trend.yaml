@@ -1,3 +1,9 @@
+# TODO: will eventually use helm to generate it
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: iter8
+---
 apiVersion: v1
 kind: Service
 metadata:
