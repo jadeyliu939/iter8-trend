@@ -9,14 +9,25 @@ git clone http://github.com/huang195/iter8-trend
 cd iter8-trend/
 ```
 
-### Building image
+### Build image
 ```
-./build.sh
+make docker-build
 ```
 
-### Run
+### Push image
 ```
-kubectl -n iter8 apply -f install/deployment.yml
+make docker-push
+```
+
+### Run iter8-trend
+#### In Kubernetes pod
+```
+kubectl -n iter8 apply -f install/kubernetes/iter8-trend.yml
+```
+
+#### As standalone process
+```
+./watcher.py
 ```
 
 ### Visualize
