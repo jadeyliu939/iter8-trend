@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
-  "iteration": 1586183534125,
+  "id": 11,
+  "iteration": 1586527635256,
   "links": [],
   "panels": [
     {
@@ -66,6 +66,8 @@
           "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[7w])) by (time, metric) >= 0",
           "format": "time_series",
           "instant": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{time}}",
           "refId": "A"
         }
       ],
@@ -79,7 +81,6 @@
         "sort": 0,
         "value_type": "individual"
       },
-      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -293,7 +294,7 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 22,
+  "schemaVersion": 20,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -422,5 +423,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 14
+  "version": 2
 }
