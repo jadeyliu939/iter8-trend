@@ -9,6 +9,8 @@ kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/maste
 ```
 
 ### Visualize trend
+Iter8-trend implements a Prometheus scrape target, so its data can be collected by Prometheus and visualized in Grafana. To enable your Prometheus to scrape Iter8-trend, follow these [steps](docs/prometheus.md). Once this is completed, follow these instructions to import Iter8-trend dashboard in Grafana:
+
 ```
 export DASHBOARD_DEFN=https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/grafana/iter8-trend.json
 curl -s https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/grafana/install.sh \
