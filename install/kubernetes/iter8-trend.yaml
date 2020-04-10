@@ -39,7 +39,7 @@ spec:
     spec:
       serviceAccountName: controller-manager
       containers:
-      - command: ["/usr/local/bin/python", "/watcher.py"]
+      - command: ["/usr/local/bin/python", "/iter8-trend.py"]
         imagePullPolicy: Always
         image: haih/iter8-trend:latest
         name: iter8-trend
