@@ -11,7 +11,7 @@ with Istio to collect Iter8-trend data.
 Kubernetes configmap. We need to add a new scrape target in the configuration
 file. This can be achieved by editing the configmap.
 ```
-kubectl -n istio-system edit prometheus
+kubectl -n istio-system edit configmap prometheus
 ```
 in the list of jobs, copy and paste the following to this list
 ```
