@@ -12,8 +12,11 @@ image:
 namespace: iter8
 
 iter8Config:
-  # Target port used by iter8-trend server
+  # Container port used for Prometheus scrape target
   iter8TrendPort: 8888
+
+  # Container port used for health checking
+  iter8HealthcheckPort: 8889
 
 nameOverride: "iter8-trend"
 fullnameOverride: "iter8-trend"

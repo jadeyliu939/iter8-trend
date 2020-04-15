@@ -205,7 +205,7 @@ class Iter8Watcher:
 				else:
 					self.send_response(404)
 					self.end_headers()
-		httpd = HTTPServer(('localhost', self.healthcheckPort), httpHandler)
+		httpd = HTTPServer(('', self.healthcheckPort), httpHandler)
 		httpd.serve_forever()
 
 	# Start a Prometheus scrape target endpoint

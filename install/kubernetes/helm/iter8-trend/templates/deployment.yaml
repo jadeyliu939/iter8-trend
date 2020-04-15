@@ -29,6 +29,15 @@ spec:
             - name: http
               containerPort: {{ .Values.iter8Config.iter8TrendPort }}
               protocol: TCP
+            - name: healthcheck
+              containerPort: {{ .Values.iter8Config.iter8HealthcheckPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/health_check
+              port: {{ .Values.iter8Config.iter8HealthcheckPort }}
+            initialDelaySeconds: 30
+            periodSeconds: 30
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

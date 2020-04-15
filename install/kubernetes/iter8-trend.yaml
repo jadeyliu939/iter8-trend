@@ -55,6 +55,15 @@ spec:
             - name: http
               containerPort: 8888
               protocol: TCP
+            - name: healthcheck
+              containerPort: 8889
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/health_check
+              port: 8889
+            initialDelaySeconds: 30
+            periodSeconds: 30
           resources:
             {}
             
