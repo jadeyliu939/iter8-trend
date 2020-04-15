@@ -8,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 from string import Template
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, REGISTRY
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from signal import signal, SIGINT
 import requests
 import json
@@ -133,8 +134,11 @@ class Iter8Watcher:
 		# Prometheus URL that is used to gather metrics data
 		self.prometheusURL = args.prometheus_url + '/api/v1/query'
 
-		# Localhost port number used for Prometheus to scrape trend data
+		# Port used for Prometheus to scrape trend data
 		self.scrapePort = args.scrape_port
+
+		# Port used for Kubernetes health checking
+		self.healthcheckPort = args.healthcheck_port
 
 		# Number of seconds between listing Iter8 Experiment CRs in K8s cluster
 		self.k8sFreq = args.k8s_freq
@@ -191,8 +195,21 @@ class Iter8Watcher:
 		except requests.exceptions.RequestException as e:
 			logger.warning("Problem querying Prometheus (%s): %s" % (self.prometheusURL, e))
 
+	def startHealthCheck(self):
+		class httpHandler(BaseHTTPRequestHandler):
+			def do_GET(self):
+				if self.path == '/api/v1/health/health_check':
+					self.send_response(200)
+					self.end_headers()
+					self.wfile.write(bytes(json.dumps({'status': 'OK'}), 'utf-8'))
+				else:
+					self.send_response(404)
+					self.end_headers()
+		httpd = HTTPServer(('localhost', self.healthcheckPort), httpHandler)
+		httpd.serve_forever()
+
 	# Start a Prometheus scrape target endpoint
-	def startServer(self):
+	def startScrapeTarget(self):
 		start_http_server(self.scrapePort)
 		REGISTRY.register(self)
 		logger.info("Starting Prometheus scrape target...")
@@ -248,8 +265,12 @@ class Iter8Watcher:
 		threads = list()
 		self.loadExpFromCluster()
 
+		t0 = threading.Thread(target=self.startHealthCheck, daemon=True, args=())
+		t0.start()
+		threads.append(t0)
+
 		# Start Prometheus scrape target endpoint
-		t1 = threading.Thread(target=self.startServer, daemon=True, args=())
+		t1 = threading.Thread(target=self.startScrapeTarget, daemon=True, args=())
 		t1.start()
 		threads.append(t1)
 
@@ -268,6 +289,7 @@ def sighandler(signalReceived, frame):
 def parseArgs():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--scrape-port", default=8888, type=int, help="Target port number for Prometheus scraping")
+	parser.add_argument("--healthcheck-port", default=8889, type=int, help="Health checking port for K8s")
 	parser.add_argument("--prometheus-url", default="http://prometheus.istio-system:9090", help="Prometheus URL to get summary metrics data")
 	parser.add_argument("--k8s-freq", default=30, type=int, help="Frequency to monitor K8s cluster for Iter8 Experiment Custom Resources")
 	args = parser.parse_args()
