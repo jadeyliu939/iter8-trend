@@ -20,7 +20,7 @@ spec:
         app.kubernetes.io/name: {{ include "iter8-trend.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: controller-manager
+      serviceAccountName: iter8-trend-sa
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
