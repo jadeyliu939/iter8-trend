@@ -192,6 +192,8 @@ class Iter8Watcher:
 							exp.setBaselineData(metric, v[1])
 						if m['destination_workload'] == exp.candidate:
 							exp.setCandidateData(metric, v[1])
+			else:
+				logger.warning("Prometheus query returned no result (%s, %s)" % (params, response))
 		except requests.exceptions.RequestException as e:
 			logger.warning("Problem querying Prometheus (%s): %s" % (self.prometheusURL, e))
 
