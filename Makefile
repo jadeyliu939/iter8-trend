@@ -11,4 +11,4 @@ build-default:
 	helm template install/kubernetes/helm/iter8-trend/ --name iter8-trend >> install/kubernetes/iter8-trend.yaml
 
 test:
-	echo "This is a placeholder"
+	echo "This is a placeholder for unit testing"
