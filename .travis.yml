@@ -1,3 +1,15 @@
 dist: xenial
 
 language: minimal
+
+stages:
+  - name: "build image"
+    if: branch = master
+
+jobs:
+  include:
+    - stage: "build image"
+      script:
+        - echo $TRAVIS_BRANCH
+          echo $DOCKERHUB_TOKEN
+          echo $DOCKERHUB_USERNAME
