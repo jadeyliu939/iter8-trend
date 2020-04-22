@@ -10,6 +10,6 @@ jobs:
   include:
     - stage: "build image"
       script:
-        - echo $TRAVIS_BRANCH
-          echo $DOCKERHUB_TOKEN
-          echo $DOCKERHUB_USERNAME
+        - echo $TRAVIS_BRANCH;
+          echo $DOCKERHUB_TOKEN;
+          echo $DOCKERHUB_USERNAME;
