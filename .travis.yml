@@ -4,8 +4,7 @@ language: minimal
 
 stages:
   - "unit tests"
-  - name: "build image"
-    if: branch = master
+  - "build image"
 
 jobs:
   include:
