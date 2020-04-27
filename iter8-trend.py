@@ -230,7 +230,7 @@ class Iter8Watcher:
 		return self.queryPrometheusResource(queryTemplate, podname, exp)
 
 	def queryPrometheusMEM(self, podname, exp):
-		queryTemplate = 'sum(rate(container_memory_working_set_bytes{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
+		queryTemplate = 'sum(avg_over_time(container_memory_working_set_bytes{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
 		return self.queryPrometheusResource(queryTemplate, podname, exp)
 
 	def startHealthCheck(self):
