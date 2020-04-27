@@ -1,4 +1,4 @@
-IMG ?= haih/iter8-trend:latest
+IMG ?= iter8/iter8-trend:latest
 
 docker-build:
 	docker build . -t ${IMG}

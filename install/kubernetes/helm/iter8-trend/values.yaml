@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: haih/iter8-trend
+  repository: iter8/iter8-trend
   tag: latest
   pullPolicy: Always
 

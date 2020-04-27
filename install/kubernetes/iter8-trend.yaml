@@ -94,7 +94,7 @@ spec:
       serviceAccountName: iter8-trend-sa
       containers:
         - name: iter8-trend
-          image: "haih/iter8-trend:latest"
+          image: "iter8/iter8-trend:latest"
           imagePullPolicy: Always
           ports:
             - name: http
