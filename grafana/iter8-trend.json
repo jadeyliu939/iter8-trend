@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 15,
-  "iteration": 1588017495476,
+  "id": 16,
+  "iteration": 1588019900428,
   "links": [],
   "panels": [
     {
@@ -132,8 +132,8 @@
       "pageSize": null,
       "showHeader": true,
       "sort": {
-        "col": 7,
-        "desc": true
+        "col": null,
+        "desc": false
       },
       "styles": [
         {
@@ -272,7 +272,7 @@
             "rgba(50, 172, 45, 0.97)"
           ],
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
+          "decimals": 5,
           "mappingType": 1,
           "pattern": "Value",
           "thresholds": [],
