@@ -61,7 +61,6 @@ class Experiment:
 
 		self.queryTemplate = {}
 		self.absentValue = {}
-		self.baselineData = {}
 		self.candidateData = {}
 		if 'metrics' in e:
 			for m in e['metrics']:
@@ -70,11 +69,6 @@ class Experiment:
 
 				# In case Prometheus doesn't return data either because i) the data is no longer retained
 				# or ii) there is no such data collected, we use its absent_value defined for that metric
-				try:
-					self.baselineData[m] = float(self.absentValue[m])
-				except:
-					# Set it to arbitrary value, hope it doesn't conflict with a real value
-					self.baselineData[m] = -1
 				try:
 					self.candidateData[m] = float(self.absentValue[m])
 				except:
@@ -108,20 +102,36 @@ class Experiment:
 
 		kwargs = {
             "interval": intervalStr,
-            "offset_str": f" offset {offsetStr}" if offsetStr else "",
+            "offset_str": f" offset {offsetStr}",
             "entity_labels": entityLabels,
         }
 		qt = Template(self.queryTemplate[metric])
 		query = qt.substitute(**kwargs)
 		return query
 
-	# Set summary metric data for the baseline version
-	# Default is 0 or if Prometheus has no data (expired)
-	def setBaselineData(self, metric, data):
-		self.baselineData[metric] = data
+	# We also get resource utilization data along with metric data, and
+	# this function generates the prometheus query string
+	def getResourceQueryStr(self, queryTemplate, podname):
+		start = parse(self.startTime)
+		end = parse(self.endTime)
+		now = datetime.now(timezone.utc)
+		interval = end-start
+		intervalStr = str(int(interval.total_seconds())) + 's'
+		offset = now-end
+		offsetStr = str(int(offset.total_seconds())) + 's'
+
+		kwargs = {
+			"interval": intervalStr,
+            "offset_str": f" offset {offsetStr}",
+			"podname": f"{podname}",
+			"namespace": self.namespace,
+		}
+		qt = Template(queryTemplate)
+		query = qt.substitute(**kwargs)
+		return query
 
 	# Set summary metric data for candidate version
-	# Default is 0 or if Prometheus has no data (expired)
+	# Default is -1 or if Prometheus has no data (expired)
 	def setCandidateData(self, metric, data):
 		self.candidateData[metric] = data
 
@@ -169,16 +179,18 @@ class Iter8Watcher:
 				if exp.isCompletedAndSuccessful:
 					self.experiments[exp.namespace + ':' + exp.name] = exp
 					for metric in exp.queryTemplate:
-						self.queryPrometheus(metric, exp)
+						self.queryPrometheusMetrics(metric, exp)
+					exp.setCandidateData('cpu', self.queryPrometheusCPU(exp.candidate, exp))
+					exp.setCandidateData('mem', self.queryPrometheusMEM(exp.candidate, exp))
 					logger.info(exp)
 		except client.rest.ApiException as e:
 			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
-		except Exception as e:
-			logger.error("Unexpected error: %s" % e)
-			exit(1)
+		#except Exception as e:
+			#logger.error("Unexpected error: %s" % e)
+			#exit(1)
 
 	# Calls Prometheus to retrieve summary metric data for an Experiment
-	def queryPrometheus(self, metric, exp):
+	def queryPrometheusMetrics(self, metric, exp):
 		params = {'query': exp.getQueryStr(metric)}
 		try:
 			response = requests.get(self.prometheusURL, params=params).json()
@@ -187,15 +199,39 @@ class Iter8Watcher:
 					if 'metric' in res and 'value' in res:
 						m = res['metric']
 						v = res['value']
-						if m['destination_workload'] == exp.baseline:
-							# v[0] is the timestamp, v[1] is the value here
-							exp.setBaselineData(metric, v[1])
 						if m['destination_workload'] == exp.candidate:
+							# v[0] is the timestamp, v[1] is the value here
 							exp.setCandidateData(metric, v[1])
 			else:
 				logger.warning("Prometheus query returned no result (%s, %s)" % (params, response))
 		except requests.exceptions.RequestException as e:
 			logger.warning("Problem querying Prometheus (%s): %s" % (self.prometheusURL, e))
+
+
+	# Calls Prometheus to retrieve resource utilization data
+	def queryPrometheusResource(self, queryTemplate, podname, exp):
+		params = {'query': exp.getResourceQueryStr(queryTemplate, podname)}
+		try:
+			response = requests.get(self.prometheusURL, params=params).json()
+			if 'data' in response and 'result' in response['data']:
+				res = response['data']['result']
+				if len(res) == 1:
+					v = res[0]['value']
+					return v[1]
+				else:
+					return -1
+			else:
+				logger.warning("Prometheus query returned no result (%s, %s)" % (params, response))
+		except requests.exceptions.RequestException as e:
+			logger.warning("Problem querying Prometheus (%s): %s" % (self.prometheusURL, e))
+
+	def queryPrometheusCPU(self, podname, exp):
+		queryTemplate = 'sum(rate(container_cpu_usage_seconds_total{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
+		return self.queryPrometheusResource(queryTemplate, podname, exp)
+
+	def queryPrometheusMEM(self, podname, exp):
+		queryTemplate = 'sum(rate(container_memory_working_set_bytes{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
+		return self.queryPrometheusResource(queryTemplate, podname, exp)
 
 	def startHealthCheck(self):
 		class httpHandler(BaseHTTPRequestHandler):
@@ -221,7 +257,7 @@ class Iter8Watcher:
 	def collect(self):
 		g = GaugeMetricFamily('iter8_trend', '', labels=['namespace', 'name', 'service_name', 'time', 'metric'])
 		for exp in self.experiments:
-			for metric in self.experiments[exp].queryTemplate:
+			for metric in self.experiments[exp].candidateData:
 				g.add_metric([self.experiments[exp].namespace, 
 							self.experiments[exp].name,
 							self.experiments[exp].serviceName,
@@ -248,7 +284,9 @@ class Iter8Watcher:
 					if exp.isCompletedAndSuccessful:
 						self.experiments[exp.namespace + ':' + exp.name] = exp
 						for metric in exp.queryTemplate:
-							self.queryPrometheus(metric, exp)
+							self.queryPrometheusMetrics(metric, exp)
+						exp.setCandidateData('cpu', self.queryPrometheusCPU(exp.candidate, exp))
+						exp.setCandidateData('mem', self.queryPrometheusMEM(exp.candidate, exp))
 						logger.info(exp)
 		
 			except client.rest.ApiException as e:
