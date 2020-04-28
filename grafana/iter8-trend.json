@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 16,
-  "iteration": 1588024299975,
+  "iteration": 1588089223865,
   "links": [],
   "panels": [
     {
@@ -302,7 +302,7 @@
       "dashes": false,
       "datasource": null,
       "fill": 10,
-      "fillGradient": 8,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 11,
@@ -335,9 +335,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[7w])) by (time, metric) >= 0",
+          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[7w]) * 100 >= 0",
           "format": "time_series",
-          "instant": false,
+          "instant": true,
           "legendFormat": "{{time}}",
           "refId": "A"
         }
@@ -366,7 +366,7 @@
       "yaxes": [
         {
           "format": "short",
-          "label": null,
+          "label": "Percentage",
           "logBase": 1,
           "max": null,
           "min": "0",
@@ -393,7 +393,7 @@
       "dashes": false,
       "datasource": null,
       "fill": 10,
-      "fillGradient": 8,
+      "fillGradient": 9,
       "gridPos": {
         "h": 8,
         "w": 11,
@@ -427,7 +427,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[7w])) by (time, metric) >= 0",
+          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[7w]) >= 0",
+          "instant": true,
           "legendFormat": "{{time}}",
           "refId": "A"
         }
@@ -457,7 +458,7 @@
         {
           "decimals": null,
           "format": "short",
-          "label": null,
+          "label": "Bytes",
           "logBase": 1,
           "max": null,
           "min": "0",
@@ -478,7 +479,7 @@
       }
     }
   ],
-  "refresh": "10s",
+  "refresh": false,
   "schemaVersion": 20,
   "style": "dark",
   "tags": [],
@@ -589,8 +590,8 @@
     ]
   },
   "time": {
-    "from": "now-6h",
-    "to": "now"
+    "from": "2020-04-28T01:10:43.476Z",
+    "to": "2020-04-29T01:10:43.476Z"
   },
   "timepicker": {
     "refresh_intervals": [
