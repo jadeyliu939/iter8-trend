@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 16,
-  "iteration": 1588167138254,
+  "iteration": 1588167138262,
   "links": [],
   "panels": [
     {
@@ -352,9 +352,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[1h])) by (time, name) * 100 >= 0",
+          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[1h]) * 100 >= 0",
           "format": "time_series",
-          "instant": false,
+          "instant": true,
           "legendFormat": "{{name}}",
           "refId": "A"
         }
@@ -444,8 +444,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[1h])) by (name, time) >= 0",
-          "instant": false,
+          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[1h]) >= 0",
+          "instant": true,
           "legendFormat": "{{name}}",
           "refId": "A"
         }
@@ -496,7 +496,7 @@
       }
     }
   ],
-  "refresh": "10s",
+  "refresh": "5s",
   "schemaVersion": 20,
   "style": "dark",
   "tags": [],
@@ -505,7 +505,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
+          "tags": [],
           "text": "bookinfo-iter8",
           "value": "bookinfo-iter8"
         },
@@ -627,5 +627,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 7
+  "version": 8
 }
