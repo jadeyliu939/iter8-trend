@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 16,
-  "iteration": 1588167138250,
+  "iteration": 1588167138254,
   "links": [],
   "panels": [
     {
@@ -28,8 +28,8 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 9,
-        "w": 22,
+        "h": 10,
+        "w": 14,
         "x": 0,
         "y": 0
       },
@@ -64,11 +64,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h])) by (time, metric) >= 0",
+          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h])) by (name, time, metric) >= 0",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
-          "legendFormat": "{{time}}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -122,18 +122,18 @@
       "datasource": null,
       "fontSize": "100%",
       "gridPos": {
-        "h": 5,
-        "w": 22,
-        "x": 0,
-        "y": 9
+        "h": 10,
+        "w": 8,
+        "x": 14,
+        "y": 0
       },
       "id": 2,
       "options": {},
       "pageSize": null,
       "showHeader": true,
       "sort": {
-        "col": 7,
-        "desc": true
+        "col": 4,
+        "desc": false
       },
       "styles": [
         {
@@ -242,7 +242,7 @@
           "mappingType": 1,
           "pattern": "namespace",
           "thresholds": [],
-          "type": "number",
+          "type": "hidden",
           "unit": "short"
         },
         {
@@ -278,6 +278,22 @@
           "thresholds": [],
           "type": "number",
           "unit": "short"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "metric",
+          "thresholds": [],
+          "type": "hidden",
+          "unit": "short"
         }
       ],
       "targets": [
@@ -291,8 +307,9 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Iter8 Trend",
+      "title": "Experiment Metric Data",
       "transform": "table",
+      "transparent": true,
       "type": "table"
     },
     {
@@ -307,7 +324,7 @@
         "h": 8,
         "w": 11,
         "x": 0,
-        "y": 14
+        "y": 10
       },
       "id": 6,
       "legend": {
@@ -335,10 +352,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[1h]) * 100 >= 0",
+          "expr": "sum(avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[1h])) by (time, name) * 100 >= 0",
           "format": "time_series",
-          "instant": true,
-          "legendFormat": "{{time}}",
+          "instant": false,
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -398,7 +415,7 @@
         "h": 8,
         "w": 11,
         "x": 11,
-        "y": 14
+        "y": 10
       },
       "id": 8,
       "interval": "",
@@ -427,9 +444,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[1h]) >= 0",
-          "instant": true,
-          "legendFormat": "{{time}}",
+          "expr": "sum(avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[1h])) by (name, time) >= 0",
+          "instant": false,
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -479,7 +496,7 @@
       }
     }
   ],
-  "refresh": false,
+  "refresh": "10s",
   "schemaVersion": 20,
   "style": "dark",
   "tags": [],
@@ -610,5 +627,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 5
+  "version": 7
 }
