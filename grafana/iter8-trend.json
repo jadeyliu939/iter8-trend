@@ -272,7 +272,7 @@
             "rgba(50, 172, 45, 0.97)"
           ],
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
+          "decimals": 5,
           "mappingType": 1,
           "pattern": "Value",
           "thresholds": [],
