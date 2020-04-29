@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 16,
-  "iteration": 1588167138262,
+  "id": 17,
+  "iteration": 1588180685680,
   "links": [],
   "panels": [
     {
@@ -29,7 +29,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 10,
-        "w": 14,
+        "w": 13,
         "x": 0,
         "y": 0
       },
@@ -64,9 +64,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h])) by (name, time, metric) >= 0",
+          "expr": "max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h]) >= 0",
           "format": "time_series",
-          "instant": false,
+          "instant": true,
           "intervalFactor": 1,
           "legendFormat": "{{name}}",
           "refId": "A"
@@ -123,8 +123,8 @@
       "fontSize": "100%",
       "gridPos": {
         "h": 10,
-        "w": 8,
-        "x": 14,
+        "w": 9,
+        "x": 13,
         "y": 0
       },
       "id": 2,
@@ -298,7 +298,7 @@
       ],
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h])) by (namespace, name, metric, time) >= 0",
+          "expr": "max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h]) >= 0",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
@@ -629,5 +629,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 8
+  "version": 2
 }
