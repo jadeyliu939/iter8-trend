@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 16,
-  "iteration": 1588089223865,
+  "iteration": 1588167138250,
   "links": [],
   "panels": [
     {
@@ -64,7 +64,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[7w])) by (time, metric) >= 0",
+          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h])) by (time, metric) >= 0",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -282,7 +282,7 @@
       ],
       "targets": [
         {
-          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[7w])) by (namespace, name, metric, time) >= 0",
+          "expr": "sum (max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h])) by (namespace, name, metric, time) >= 0",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
@@ -335,7 +335,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[7w]) * 100 >= 0",
+          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[1h]) * 100 >= 0",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{time}}",
@@ -427,7 +427,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[7w]) >= 0",
+          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[1h]) >= 0",
           "instant": true,
           "legendFormat": "{{time}}",
           "refId": "A"
@@ -590,8 +590,8 @@
     ]
   },
   "time": {
-    "from": "2020-04-28T01:10:43.476Z",
-    "to": "2020-04-29T01:10:43.476Z"
+    "from": "now-6h",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -610,5 +610,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 2
+  "version": 5
 }
