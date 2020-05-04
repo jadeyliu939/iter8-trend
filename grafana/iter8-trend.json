@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 20,
-  "iteration": 1588605543539,
+  "iteration": 1588605543541,
   "links": [],
   "panels": [
     {
@@ -585,7 +585,7 @@
         "options": [],
         "query": "label_values(iter8_trend, metric)",
         "refresh": 1,
-        "regex": "^(?!cpu|mem).*$",
+        "regex": "^(?!cpu$|mem$).*",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
@@ -617,5 +617,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 2
+  "version": 3
 }
