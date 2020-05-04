@@ -64,7 +64,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h]) >= 0",
+          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'} >= 0",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -298,7 +298,7 @@
       ],
       "targets": [
         {
-          "expr": "max_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}[1h]) >= 0",
+          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'} >= 0",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
@@ -353,7 +353,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}[1h]) >= 0",
+          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='mem'} >= 0",
           "instant": true,
           "legendFormat": "{{name}}",
           "refId": "A"
@@ -444,7 +444,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg_over_time(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}[1h]) * 100 >= 0",
+          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'} * 100 >= 0",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{name}}",
@@ -617,5 +617,5 @@
   "timezone": "",
   "title": "Iter8 trend",
   "uid": "krYN7ZuWz",
-  "version": 3
+  "version": 4
 }
