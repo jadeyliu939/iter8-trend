@@ -182,6 +182,8 @@ class Iter8Watcher:
 						self.queryPrometheusMetrics(metric, exp)
 					exp.setCandidateData('cpu', self.queryPrometheusCPU(exp.candidate, exp))
 					exp.setCandidateData('mem', self.queryPrometheusMEM(exp.candidate, exp))
+					exp.setCandidateData('diskreadbytes', self.queryPrometheusDiskReadBytes(exp.candidate, exp))
+					exp.setCandidateData('diskwritebytes', self.queryPrometheusDiskWriteBytes(exp.candidate, exp))
 					logger.info(exp)
 		except client.rest.ApiException as e:
 			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
@@ -231,6 +233,14 @@ class Iter8Watcher:
 
 	def queryPrometheusMEM(self, podname, exp):
 		queryTemplate = 'sum(avg_over_time(container_memory_working_set_bytes{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
+		return self.queryPrometheusResource(queryTemplate, podname, exp)
+
+	def queryPrometheusDiskReadBytes(self, podname, exp):
+		queryTemplate = 'sum(rate(container_fs_reads_bytes_total{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
+		return self.queryPrometheusResource(queryTemplate, podname, exp)
+
+	def queryPrometheusDiskWriteBytes(self, podname, exp):
+		queryTemplate = 'sum(rate(container_fs_writes_bytes_total{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
 		return self.queryPrometheusResource(queryTemplate, podname, exp)
 
 	def startHealthCheck(self):
@@ -287,6 +297,8 @@ class Iter8Watcher:
 							self.queryPrometheusMetrics(metric, exp)
 						exp.setCandidateData('cpu', self.queryPrometheusCPU(exp.candidate, exp))
 						exp.setCandidateData('mem', self.queryPrometheusMEM(exp.candidate, exp))
+						exp.setCandidateData('diskreadbytes', self.queryPrometheusDiskReadBytes(exp.candidate, exp))
+						exp.setCandidateData('diskwritebytes', self.queryPrometheusDiskWriteBytes(exp.candidate, exp))
 						logger.info(exp)
 		
 			except client.rest.ApiException as e:
