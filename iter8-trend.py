@@ -184,6 +184,8 @@ class Iter8Watcher:
 					exp.setCandidateData('mem', self.queryPrometheusMEM(exp.candidate, exp))
 					exp.setCandidateData('diskreadbytes', self.queryPrometheusDiskReadBytes(exp.candidate, exp))
 					exp.setCandidateData('diskwritebytes', self.queryPrometheusDiskWriteBytes(exp.candidate, exp))
+					exp.setCandidateData('networkreadbytes', self.queryPrometheusNetworkReadBytes(exp.candidate, exp))
+					exp.setCandidateData('networkwritebytes', self.queryPrometheusNetworkWriteBytes(exp.candidate, exp))
 					logger.info(exp)
 		except client.rest.ApiException as e:
 			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
@@ -243,6 +245,14 @@ class Iter8Watcher:
 		queryTemplate = 'sum(rate(container_fs_writes_bytes_total{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
 		return self.queryPrometheusResource(queryTemplate, podname, exp)
 
+	def queryPrometheusNetworkReadBytes(self, podname, exp):
+		queryTemplate = 'sum(rate(container_network_receive_bytes_total{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
+		return self.queryPrometheusResource(queryTemplate, podname, exp)
+
+	def queryPrometheusNetworkWriteBytes(self, podname, exp):
+		queryTemplate = 'sum(rate(container_network_transmit_bytes_total{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
+		return self.queryPrometheusResource(queryTemplate, podname, exp)
+
 	def startHealthCheck(self):
 		class httpHandler(BaseHTTPRequestHandler):
 			def do_GET(self):
@@ -299,6 +309,8 @@ class Iter8Watcher:
 						exp.setCandidateData('mem', self.queryPrometheusMEM(exp.candidate, exp))
 						exp.setCandidateData('diskreadbytes', self.queryPrometheusDiskReadBytes(exp.candidate, exp))
 						exp.setCandidateData('diskwritebytes', self.queryPrometheusDiskWriteBytes(exp.candidate, exp))
+						exp.setCandidateData('networkreadbytes', self.queryPrometheusNetworkReadBytes(exp.candidate, exp))
+						exp.setCandidateData('networkwritebytes', self.queryPrometheusNetworkWriteBytes(exp.candidate, exp))
 						logger.info(exp)
 		
 			except client.rest.ApiException as e:
