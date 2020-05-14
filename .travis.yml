@@ -11,6 +11,9 @@ env:
   global:
     - CHANGE_MINIKUBE_NONE_USER=true
 
+_end_to_end_script: &end_to_end_script
+  script: test/test.sh
+
 jobs:
   include:
     - stage: "unit tests"
@@ -22,22 +25,14 @@ jobs:
       script:
         - make test
     - stage: "end-to-end tests"
-      env:
-        - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
-      script:
-        - test/test.sh
-    - env:
-        - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.6
-      script:
-        - test/test.sh
-    - env:
-        - KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.3
-      script:
-        - test/test.sh
-    - env:
-        - KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.6
-      script:
-        - test/test.sh
+      env: KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
+      <<: *end_to_end_script
+    - env: KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.6
+      <<: *end_to_end_script
+    - env: KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.3
+      <<: *end_to_end_script
+    - env: KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.6
+      <<: *end_to_end_script
     - stage: "build image"
       script:
         - if [ "$TRAVIS_BRANCH" == "master" ]; then
