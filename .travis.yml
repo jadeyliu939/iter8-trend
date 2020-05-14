@@ -9,9 +9,24 @@ stages:
 
 env:
   global:
+    - MINIKUBE_VERSION=v1.8.1
+    - MINIKUBE_WANTUPDATENOTIFICATION=false
+    - MINIKUBE_WANTREPORTERRORPROMPT=false
+    - MINIKUBE_HOME=$HOME
     - CHANGE_MINIKUBE_NONE_USER=true
+    - KUBECONFIG=$HOME/.kube/config
 
+# Define yaml anchor to be reused across testing matrix
 _end_to_end_script: &end_to_end_script
+  sudo: required
+  before_script:
+    # Download kubectl
+    - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+    # Download minikube
+    - curl -Lo minikube https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+    # Create kube and minikube configuration directories
+    - mkdir -p $HOME/.kube $HOME/.minikube
+    # touch $KUBECONFIG
   script: test/test.sh
 
 jobs:
@@ -25,13 +40,13 @@ jobs:
       script:
         - make test
     - stage: "end-to-end tests"
-      env: KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
+      env: KUBE_VERSION=v1.15.10 ISTIO_VERSION=1.4.3
       <<: *end_to_end_script
-    - env: KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.6
+    - env: KUBE_VERSION=v1.15.10 ISTIO_VERSION=1.4.6
       <<: *end_to_end_script
-    - env: KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.3
+    - env: KUBE_VERSION=v1.16.0 ISTIO_VERSION=1.4.3
       <<: *end_to_end_script
-    - env: KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.6
+    - env: KUBE_VERSION=v1.16.0 ISTIO_VERSION=1.4.6
       <<: *end_to_end_script
     - stage: "build image"
       script:
