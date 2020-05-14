@@ -843,7 +843,7 @@
         "buckets": null,
         "mode": "series",
         "name": null,
-        "show": true,
+        "show": false,
         "values": [
           "total"
         ]
