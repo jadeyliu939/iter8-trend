@@ -4,7 +4,6 @@ language: minimal
 
 stages:
   - "unit tests"
-  - "end-to-end tests"
   - "build image"
 
 env:
@@ -16,6 +15,9 @@ env:
   istio:
     - ISTIO_VERSION=1.4.3
     - ISTIO_VERSION=1.4.6
+
+script:
+  - test/test.sh
 
 jobs:
   include:
@@ -29,9 +31,6 @@ jobs:
         - make test
       env:
         - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
-    - stage: "end-to-end tests"
-      script:
-        - test/test.sh
     - stage: "build image"
       script:
         - if [ "$TRAVIS_BRANCH" == "master" ]; then
