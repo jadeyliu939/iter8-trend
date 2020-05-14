@@ -21,12 +21,11 @@ jobs:
       env:
         global:
           - CHANGE_MINIKUBE_NONE_USER=true
-        kube:
-          - KUBE_VERSION=1.15.10
-          - KUBE_VERSION=1.16.0
-        istio:
-          - ISTIO_VERSION=1.4.3
-          - ISTIO_VERSION=1.4.6
+        jobs:
+          - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
+          - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.6
+          - KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.3
+          - KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.6
       script:
         - test/test.sh
     - stage: "build image"
