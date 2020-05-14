@@ -29,7 +29,7 @@ _end_to_end_script: &end_to_end_script
     - touch $KUBECONFIG
     - sudo minikube start --profile=minikube --vm-driver=none --kubernetes-version=$KUBE_VERSION
     - minikube update-context --profile=minikube
-    - sudo chown -R travis: /home/travis/.minikube/
+    - "sudo chown -R travis: /home/travis/.minikube/"
     - eval "$(minikube docker-env --profile=minikube)" && export DOCKER_CLI='docker'
   script: 
     - kubectl cluster-info
