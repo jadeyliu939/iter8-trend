@@ -4,6 +4,7 @@ language: minimal
 
 stages:
   - "unit tests"
+  - "end-to-end tests"
   - "build image"
 
 jobs:
@@ -16,6 +17,18 @@ jobs:
         - pip install -r requirements.txt
       script:
         - make test
+    - stage: "end-to-end tests"
+      env:
+        global:
+          - CHANGE_MINIKUBE_NONE_USER=true
+        kube:
+          - KUBE_VERSION=1.15.10
+          - KUBE_VERSION=1.16.0
+        istio:
+          - ISTIO_VERSION=1.4.3
+          - ISTIO_VERSION=1.4.6
+      script:
+        - test/test.sh
     - stage: "build image"
       script:
         - if [ "$TRAVIS_BRANCH" == "master" ]; then
