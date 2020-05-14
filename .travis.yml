@@ -4,18 +4,12 @@ language: minimal
 
 stages:
   - "unit tests"
+  - "end-to-end tests"
   - "build image"
 
 env:
   global:
     - CHANGE_MINIKUBE_NONE_USER=true
-  - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
-  - KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.3
-  - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.6
-  - KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.6
-
-script:
-  - test/test.sh
 
 jobs:
   include:
@@ -27,8 +21,15 @@ jobs:
         - pip install -r requirements.txt
       script:
         - make test
-      env:
-        - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
+    - stage "end-to-end tests"
+      env: KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
+      script: test/test.sh
+    - env: KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.6
+      script: test/test.sh
+    - env: KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.3
+      script: test/test.sh
+    - env: KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.6
+      script: test/test.sh
     - stage: "build image"
       script:
         - if [ "$TRAVIS_BRANCH" == "master" ]; then
@@ -49,5 +50,3 @@ jobs:
               make docker-push;
             fi
           fi
-      env:
-        - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
