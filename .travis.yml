@@ -32,7 +32,16 @@ _end_to_end_script: &end_to_end_script
     - "sudo chown -R travis: /home/travis/.minikube/"
     - eval "$(minikube docker-env --profile=minikube)" && export DOCKER_CLI='docker'
   script: 
+    # Sanity check K8s cluster
     - kubectl cluster-info
+    # Clone and install Istio
+    - curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
+    - cd istio-${ISTIO_VERSION}
+    - bin/istioctl manifest apply --set profile=demo
+    - kubectl -n istio-system get pods
+    # Clone and install Iter8
+    # Install Iter8-trend
+    # Running the end-to-end test script
     - test/test.sh
 
 jobs:
