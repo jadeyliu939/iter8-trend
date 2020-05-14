@@ -7,6 +7,10 @@ stages:
   - "end-to-end tests"
   - "build image"
 
+env:
+  global:
+    - CHANGE_MINIKUBE_NONE_USER=true
+
 jobs:
   include:
     - stage: "unit tests"
@@ -19,8 +23,6 @@ jobs:
         - make test
     - stage: "end-to-end tests"
       env:
-        global:
-          - CHANGE_MINIKUBE_NONE_USER=true
         jobs:
           - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
           - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.6
