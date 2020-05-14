@@ -15,7 +15,7 @@ echo ""
 echo "===================================="
 echo "Enable Istio for bookinfo-iter8 ns"
 echo "===================================="
-kubectl label namespace bookinfo-iter8 istio-injection=enabled
+kubectl label namespace bookinfo-iter8 istio-injection=enabled --overwrite
 
 echo ""
 echo "===================================="
@@ -40,7 +40,7 @@ echo "===================================="
 IP=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $3}'`
 PORT=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $5}' | awk -F/ '{print $1}'`
 echo "Service IP:port is $IP:$PORT"
-watch -n 0.1 'curl -H "Host: bookinfo.sample.dev" -Is "http://$IP:$PORT/productpage"'&
+watch -n 0.1 'curl -H "Host: bookinfo.sample.dev" -Is "http://$IP:$PORT/productpage"' &>/dev/null &
 
 echo ""
 echo "===================================="
