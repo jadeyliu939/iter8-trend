@@ -23,7 +23,7 @@ jobs:
         - make test
     - stage: "end-to-end tests"
       env:
-        jobs:
+        matrix:
           - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.3
           - KUBE_VERSION=1.15.10 ISTIO_VERSION=1.4.6
           - KUBE_VERSION=1.16.0 ISTIO_VERSION=1.4.3
