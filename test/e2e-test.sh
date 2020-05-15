@@ -1,11 +1,13 @@
 #!/bin/sh
 
 # Exit on error
-set -ev
+set -e
+
+echo "*** Start iter8-trend end-to-end testing ***"
 
 echo ""
 echo "===================================="
-echo "Start iter8-trend end-to-end testing"
+echo "Scenario #1"
 echo "===================================="
 
 echo ""

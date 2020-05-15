@@ -52,7 +52,7 @@ _end_to_end_script: &end_to_end_script
     #- kubectl -n iter8 logs `kubectl -n iter8 get pods | grep iter8-trend | awk {'print $1'}`
     - kubectl -n iter8 get pods
     # Running the end-to-end test script
-    - test/test.sh
+    - test/e2e-test.sh
 
 jobs:
   include:
