@@ -48,8 +48,8 @@ _end_to_end_script: &end_to_end_script
     # adding 1 sec wait time for the operation to fully register
     - sleep 1
     - kubectl wait --for=condition=Ready pods --all -n iter8 --timeout=180s
-    - kubectl -n iter8 describe pod iter8-trend
-    - kubectl -n iter8 logs `kubectl -n iter8 get pods | grep iter8-trend | awk {'print $1'}`
+    #- kubectl -n iter8 describe pod iter8-trend
+    #- kubectl -n iter8 logs `kubectl -n iter8 get pods | grep iter8-trend | awk {'print $1'}`
     - kubectl -n iter8 get pods
     # Running the end-to-end test script
     - test/test.sh
