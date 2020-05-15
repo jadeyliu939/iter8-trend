@@ -76,9 +76,9 @@ class Experiment:
 
 	# Prints an Experiment Custom Resource
 	def __str__(self):
-		s = f"{self.namespace}.{self.name}(service:{self.servicename}, " \
+		s = f"{self.namespace}.{self.name}(service:{self.serviceName}, " \
 			f"baseline:{self.baseline}, candidate:{self.candidate}): " \
-			f"{self.phase} ({self.startTime} - {self.endTime}}) [{self.candidateData}]"
+			f"{self.phase} ({self.startTime} - {self.endTime}) [{self.candidateData}]"
 		return s
 
 	# Convert a query template from an Experiment Custom Resource
