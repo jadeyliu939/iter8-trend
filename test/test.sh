@@ -13,12 +13,6 @@ kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/
 
 echo ""
 echo "===================================="
-echo "Enable Istio for bookinfo-iter8 ns"
-echo "===================================="
-kubectl label namespace bookinfo-iter8 istio-injection=enabled --overwrite
-
-echo ""
-echo "===================================="
 echo "Create bookinfo-iter8 app"
 echo "===================================="
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/bookinfo-tutorial.yaml
@@ -41,7 +35,7 @@ IP=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $3}'
 PORT=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $5}' | awk -F/ '{print $1}'`
 echo "Service IP:port is $IP:$PORT"
 curl -H "Host: bookinfo.sample.dev" -Is "http://$IP:$PORT/productpage"
-watch -n 0.1 "curl -H \"Host: bookinfo.sample.dev\" -Is \"http://$IP:$PORT/productpage\"" >/dev/null 2>&1 &
+#watch -n 0.1 "curl -H \"Host: bookinfo.sample.dev\" -Is \"http://$IP:$PORT/productpage\"" >/dev/null 2>&1 &
 
 echo ""
 echo "===================================="
@@ -57,3 +51,7 @@ echo "===================================="
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/reviews-v3.yaml
 kubectl wait --for=condition=ExperimentSucceeded -n bookinfo-iter8 experiments.iter8.tools reviews-v3-rollout --timeout=180s
 kubectl get experiments -n bookinfo-iter8
+conclusion=`kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v3-rollout -o=jsonpath='{.status.assessment.conclusions[0]}'`
+if [ $conclusion != 'All success criteria were  met' ]; then
+  exit 1
+fi
