@@ -35,7 +35,7 @@ IP=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $3}'
 PORT=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $5}' | awk -F/ '{print $1}'`
 echo "Service IP:port is $IP:$PORT"
 curl -H "Host: bookinfo.sample.dev" -Is "http://$IP:$PORT/productpage"
-#watch -n 0.1 "curl -H \"Host: bookinfo.sample.dev\" -Is \"http://$IP:$PORT/productpage\"" >/dev/null 2>&1 &
+watch -n 0.1 "curl -H \"Host: bookinfo.sample.dev\" -Is \"http://$IP:$PORT/productpage\"" >/dev/null 2>&1 &
 
 echo ""
 echo "===================================="
