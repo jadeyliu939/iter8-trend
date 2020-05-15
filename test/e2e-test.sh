@@ -21,6 +21,7 @@ echo "===================================="
 echo "Create bookinfo-iter8 app"
 echo "===================================="
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/bookinfo-tutorial.yaml
+sleep 1
 kubectl wait --for=condition=Ready pods --all -n bookinfo-iter8 --timeout=180s
 kubectl get pods,services -n bookinfo-iter8
 
@@ -54,6 +55,7 @@ echo "===================================="
 echo "Deploy canary version"
 echo "===================================="
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/reviews-v3.yaml
+sleep 1
 kubectl wait --for=condition=ExperimentSucceeded -n bookinfo-iter8 experiments.iter8.tools reviews-v3-rollout --timeout=180s
 kubectl get experiments -n bookinfo-iter8
 conclusion=`kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v3-rollout -o=jsonpath='{.status.assessment.conclusions[0]}'`
