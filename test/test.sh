@@ -42,6 +42,8 @@ PORT=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $5
 echo "Service IP:port is $IP:$PORT"
 curl -H "Host: bookinfo.sample.dev" -Is "http://$IP:$PORT/productpage"
 #watch -n 0.1 'curl -H "Host: bookinfo.sample.dev" -Is "http://$IP:$PORT/productpage"' &>/dev/null &
+wget https://storage.googleapis.com/hey-release/hey_linux_amd64 -O hey && chmod 755 hey
+./hey -q 100 -z 30m http://$IP:$PORT/productpage &
 
 echo ""
 echo "===================================="
