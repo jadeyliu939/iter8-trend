@@ -76,16 +76,9 @@ class Experiment:
 
 	# Prints an Experiment Custom Resource
 	def __str__(self):
-		s = "%s.%s(service:%s, baseline:%s, candidate:%s): %s (%s - %s) [" % ( \
-			self.namespace, \
-			self.name, \
-			self.serviceName, \
-			self.baseline, \
-			self.candidate, \
-			self.phase, \
-			self.startTime, \
-			self.endTime)
-		s += "%s]" % self.candidateData
+		s = f"{self.namespace}.{self.name}(service:{self.servicename}, " \
+			f"baseline:{self.baseline}, candidate:{self.candidate}): " \
+			f"{self.phase} ({self.startTime} - {self.endTime}}) [{self.candidateData}]"
 		return s
 
 	# Convert a query template from an Experiment Custom Resource
@@ -188,10 +181,10 @@ class Iter8Watcher:
 					exp.setCandidateData('networkwritebytes', self.queryPrometheusNetworkWriteBytes(exp.candidate, exp))
 					logger.info(exp)
 		except client.rest.ApiException as e:
-			logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
-		#except Exception as e:
-			#logger.error("Unexpected error: %s" % e)
-			#exit(1)
+			logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
+		except Exception as e:
+			logger.error(f"Unexpected error: {e}")
+			exit(1)
 
 	# Calls Prometheus to retrieve summary metric data for an Experiment
 	def queryPrometheusMetrics(self, metric, exp):
@@ -207,9 +200,9 @@ class Iter8Watcher:
 							# v[0] is the timestamp, v[1] is the value here
 							exp.setCandidateData(metric, v[1])
 			else:
-				logger.warning("Prometheus query returned no result (%s, %s)" % (params, response))
+				logger.warning(f"Prometheus query returned no result ({params}, {response})")
 		except requests.exceptions.RequestException as e:
-			logger.warning("Problem querying Prometheus (%s): %s" % (self.prometheusURL, e))
+			logger.warning(f"Problem querying Prometheus ({self.prometheusURL}): {e}")
 
 
 	# Calls Prometheus to retrieve resource utilization data
@@ -225,9 +218,9 @@ class Iter8Watcher:
 				else:
 					return -1
 			else:
-				logger.warning("Prometheus query returned no result (%s, %s)" % (params, response))
+				logger.warning(f"Prometheus query returned no result ({params}, {response})")
 		except requests.exceptions.RequestException as e:
-			logger.warning("Problem querying Prometheus (%s): %s" % (self.prometheusURL, e))
+			logger.warning(f"Problem querying Prometheus ({self.prometheusURL}): {e}")
 
 	def queryPrometheusCPU(self, podname, exp):
 		queryTemplate = 'sum(rate(container_cpu_usage_seconds_total{pod=~"$podname.*", container!~"istio-proxy", namespace="$namespace", image=~".+"}[$interval]$offset_str))'
@@ -314,10 +307,10 @@ class Iter8Watcher:
 						logger.info(exp)
 		
 			except client.rest.ApiException as e:
-				logger.error("Exception when calling CustomObjectApi->list_cluster_custom_object: %s" % e)
+				logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
 			except Exception as e:
 				# In case we are having problem connecting to K8s, we just quit
-				logger.error("Unexpected error: %s" % e)
+				logger.error(f"Unexpected error: {e}")
 				os.kill(os.getpid(), SIGINT)
 
 			time.sleep(self.k8sFreq)
