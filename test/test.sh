@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Exit on error
-set -e
+set -ev
 
 echo ""
 echo "===================================="
