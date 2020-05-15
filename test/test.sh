@@ -52,6 +52,6 @@ kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools
 kubectl wait --for=condition=ExperimentSucceeded -n bookinfo-iter8 experiments.iter8.tools reviews-v3-rollout --timeout=180s
 kubectl get experiments -n bookinfo-iter8
 conclusion=`kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v3-rollout -o=jsonpath='{.status.assessment.conclusions[0]}'`
-if [ $conclusion != 'All success criteria were  met' ]; then
+if [ "$conclusion" != "All success criteria were  met" ]; then
   exit 1
 fi
