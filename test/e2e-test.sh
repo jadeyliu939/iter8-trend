@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Exit on error
-set -ev
+set -e
 
 echo "*** Start iter8-trend end-to-end testing ***"
 
