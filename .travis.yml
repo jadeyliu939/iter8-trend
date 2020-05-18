@@ -7,52 +7,13 @@ stages:
   - "end-to-end tests"
   - "build image"
 
-env:
-  global:
-    - MINIKUBE_VERSION=v1.8.1
-    - MINIKUBE_WANTUPDATENOTIFICATION=false
-    - MINIKUBE_WANTREPORTERRORPROMPT=false
-    - MINIKUBE_HOME=$HOME
-    - CHANGE_MINIKUBE_NONE_USER=true
-    - KUBECONFIG=$HOME/.kube/config
-
 # Define yaml anchor to be reused across testing matrix
 _end_to_end_script: &end_to_end_script
-  before_script:
-    # Download kubectl
-    - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-    # Download minikube
-    - curl -Lo minikube https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
-    # Create kube and minikube configuration directories
-    - mkdir -p $HOME/.kube $HOME/.minikube
-    - touch $KUBECONFIG
-    - sudo minikube start --profile=minikube --vm-driver=none --kubernetes-version=$KUBE_VERSION
-    - minikube update-context --profile=minikube
-    - "sudo chown -R travis: /home/travis/.minikube/"
-    - eval "$(minikube docker-env --profile=minikube)" && export DOCKER_CLI='docker'
-  script: 
-    # Sanity check K8s cluster
-    - kubectl version
-    - kubectl cluster-info
-    # Install Istio
-    - curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
-    - istio-${ISTIO_VERSION}/bin/istioctl version
-    - istio-${ISTIO_VERSION}/bin/istioctl manifest apply --set profile=demo
-    - sleep 1
-    - kubectl wait --for=condition=Ready pods --all -n istio-system --timeout=180s
-    - kubectl -n istio-system get pods
-    # Install Iter8
-    - kubectl apply -f https://github.com/iter8-tools/iter8-analytics/releases/latest/download/iter8-analytics.yaml -f https://github.com/iter8-tools/iter8-controller/releases/latest/download/iter8-controller.yaml
-    # Install Iter8-trend
-    - kubectl apply -f install/kubernetes/iter8-trend.yaml
-    # Sometimes `kubectl apply` doesn't register for `kubectl wait` before,
-    # adding 1 sec wait time for the operation to fully register
-    - sleep 1
-    - kubectl wait --for=condition=Ready pods --all -n iter8 --timeout=180s
-    #- kubectl -n iter8 describe pod iter8-trend
-    #- kubectl -n iter8 logs `kubectl -n iter8 get pods | grep iter8-trend | awk {'print $1'}`
-    - kubectl -n iter8 get pods
-    # Running the end-to-end test script
+  script:
+    - test/install-minikube.sh
+    - test/sanity-check.sh
+    - test/install-istio.sh
+    - test/install-iter8.sh
     - test/e2e-test.sh
 
 jobs:
