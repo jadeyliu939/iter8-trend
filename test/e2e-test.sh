@@ -1,5 +1,5 @@
 #!/bin/sh
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )"
+DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 
-$DIR/test/e2e-scenario-1.sh
+$DIR/e2e-scenario-1.sh
