@@ -56,13 +56,14 @@ echo "Deploy canary version"
 echo "===================================="
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/reviews-v3.yaml
 sleep 1
-kubectl wait --for=condition=ExperimentSucceeded -n bookinfo-iter8 experiments.iter8.tools reviews-v3-rollout --timeout=180s
+kubectl wait --for=condition=ExperimentCompleted -n bookinfo-iter8 experiments.iter8.tools reviews-v3-rollout --timeout=180s
 kubectl get experiments -n bookinfo-iter8
 
 echo ""
 echo "===================================="
 echo "Test results"
 echo "===================================="
+kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v3-rollout -o yaml
 conclusion=`kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v3-rollout -o=jsonpath='{.status.assessment.conclusions[0]}'`
 if [ "$conclusion" != "All success criteria were  met" ]; then
   echo "Experiment failed unexpectedly!"
