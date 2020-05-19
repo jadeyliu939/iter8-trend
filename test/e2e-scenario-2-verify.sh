@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# Exit on error
-set -e
-
 # This is called after an Iter8 experiment is finished. We give an additional
 # 60 seconds before testing if Iter8-trend is emitting data via its Prometheus
 # scrape target
