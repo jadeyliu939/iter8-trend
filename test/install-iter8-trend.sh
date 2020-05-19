@@ -25,7 +25,7 @@ kubectl apply -f install/kubernetes/iter8-trend.yaml
 # `kubectl apply` doesn't register for `kubectl wait` before, so
 # adding 1 sec wait time for the operation to fully register
 sleep 1
-kubectl wait --for=condition=Ready pods --all -n iter8 --timeout=180s
+kubectl wait --for=condition=Ready pods --all -n iter8 --timeout=300s
 # kubectl -n iter8 describe pod iter8-trend
 # kubectl -n iter8 logs `kubectl -n iter8 get pods | grep iter8-trend | awk {'print $1'}`
 kubectl -n iter8 get pods
