@@ -7,9 +7,7 @@ set -e
 IMG=iter8-trend:test make docker-build
 
 # Install Helm (from bleeding edge)
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-chmod 755 get_helm.sh
-./get_helm.sh
+curl -fsSL https://get.helm.sh/helm-v2.16.7-linux-amd64.tar.gz | tar xvzf - && mv linux-amd64/helm /usr/local/bin
 
 # Create new Helm template based on the new image
 helm template install/kubernetes/helm/iter8-trend/ --name iter8-trend \
