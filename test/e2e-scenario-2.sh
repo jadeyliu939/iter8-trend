@@ -30,7 +30,7 @@ echo "Test results"
 echo "===================================="
 kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v4-rollout -o yaml
 conclusion=`kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v4-rollout -o=jsonpath='{.status.assessment.conclusions[0]}'`
-if [ "$conclusion" != "All success criteria were not met" ]; then
+if [ "$conclusion" == "All success criteria were  met" ]; then
   echo "Experiment succeded unexpectedly!"
   exit 1
 fi
