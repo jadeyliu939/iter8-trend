@@ -1,9 +1,17 @@
 #!/bin/sh
 
+# Exit on error
+set -e
+
 # Build a new Iter8-trend image based on the new code
 IMG=iter8-trend:test make docker-build
 
-# Create new helm template based on the new image
+# Install Helm (from bleeding edge)
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+chmod 755 get_helm.sh
+./get_helm.sh
+
+# Create new Helm template based on the new image
 helm template install/kubernetes/helm/iter8-trend/ --name iter8-trend \
 --set image.repository=iter8-trend \
 --set image.tag=test \

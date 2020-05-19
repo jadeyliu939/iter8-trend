@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Exit on error
+set -e
+
 # Install Iter8
 kubectl apply -f https://github.com/iter8-tools/iter8-analytics/releases/latest/download/iter8-analytics.yaml -f https://github.com/iter8-tools/iter8-controller/releases/latest/download/iter8-controller.yaml
 

@@ -2,6 +2,9 @@
 
 # Relies on .travis.yml to set up environment variables
 
+# Exit on error
+set -e
+
 # Install Istio
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
 istio-${ISTIO_VERSION}/bin/istioctl version
