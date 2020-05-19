@@ -15,13 +15,13 @@ echo "===================================="
 
 IP=`kubectl -n iter8 get services | grep iter8-trend | awk '{print $3}'`
 PORT=`kubectl -n iter8 get services | grep iter8-trend | awk '{print $5}' | awk -F/ '{print $1}'`
-DATA=`curl -s $IP:$PORT | grep "name=\"reviews-v3-rollout\""`
+DATA=`curl -s $IP:$PORT | grep "name=\"reviews-v4-rollout\""`
 LINES=`echo "$DATA" | wc -l`
-if [ "$LINES" -le 0 ]
+if [ "$LINES" -ne 0 ]
 then
-	echo "Iter8-trend did not summarize metric data for successful experiment as expected!"
+	echo "Iter8-trend summarized metric data for failed experiment unexpectedly!"
 	exit 1
 else
-	echo "Iter8-trend correctly summarized metric data for successful experiment!"
+	echo "Iter8-trend correctly skipped summarizing metric data for failed experiment!"
 	echo "$DATA"
 fi

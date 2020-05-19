@@ -65,6 +65,7 @@ echo "Test results"
 echo "===================================="
 conclusion=`kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v3-rollout -o=jsonpath='{.status.assessment.conclusions[0]}'`
 if [ "$conclusion" != "All success criteria were  met" ]; then
+  echo "Experiment failed unexpectedly!"
   exit 1
 fi
 echo "Experiment succeeded"
