@@ -21,5 +21,4 @@ then
 	exit 1
 else
 	echo "Iter8-trend correctly summarized metric data for successful experiment!"
-	echo "$DATA"
 fi
