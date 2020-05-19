@@ -16,6 +16,7 @@ echo "===================================="
 IP=`kubectl -n iter8 get services | grep iter8-trend | awk '{print $3}'`
 PORT=`kubectl -n iter8 get services | grep iter8-trend | awk '{print $5}' | awk -F/ '{print $1}'`
 DATA=`curl -s $IP:$PORT | grep "name=\"reviews-v3-rollout\""`
+echo "Data from Prometheus scrape target: $DATA"
 LINES=`echo "$DATA" | wc -l`
 if [ "$LINES" -le 0 ]
 then
