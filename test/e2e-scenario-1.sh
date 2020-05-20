@@ -27,7 +27,7 @@ kubectl get pods,services -n bookinfo-iter8
 
 echo ""
 echo "===================================="
-echo "Create bookinfo-iter8 gateway"
+echo "Create bookinfo-iter8 gateway and vs"
 echo "===================================="
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/bookinfo-gateway.yaml
 kubectl get gateway -n bookinfo-iter8
