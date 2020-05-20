@@ -69,4 +69,4 @@ if [ "$conclusion" != "All success criteria were  met" ]; then
   echo "Experiment failed unexpectedly!"
   exit 1
 fi
-echo "Experiment succeeded"
+echo "Experiment succeeded!"

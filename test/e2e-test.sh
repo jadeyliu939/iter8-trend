@@ -14,3 +14,5 @@ $DIR/e2e-scenario-2.sh
 $DIR/e2e-scenario-2-verify.sh
 $DIR/e2e-scenario-3.sh
 $DIR/e2e-scenario-3-verify.sh
+$DIR/e2e-scenario-4.sh
+$DIR/e2e-scenario-4-verify.sh
