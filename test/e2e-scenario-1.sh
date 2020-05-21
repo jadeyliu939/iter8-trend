@@ -37,9 +37,13 @@ echo ""
 echo "===================================="
 echo "Generate workload"
 echo "===================================="
-IP=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $3}'`
-PORT=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $5}' | awk -F/ '{print $1}'`
-echo "Service IP:port is $IP:$PORT"
+# We are using nodeport of the Istio ingress gateway to access bookinfo app
+IP='127.0.0.1'
+PORT=`kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}'`
+# Following uses the K8s service IP/port to access bookinfo app
+#IP=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $3}'`
+#PORT=`kubectl -n bookinfo-iter8 get services | grep productpage | awk '{print $5}' | awk -F/ '{print $1}'`
+echo "Bookinfo is accessed at: $IP:$PORT"
 curl -H "Host: bookinfo.sample.dev" -Is "http://$IP:$PORT/productpage"
 watch -n 0.1 "curl -H \"Host: bookinfo.sample.dev\" -Is \"http://$IP:$PORT/productpage\"" >/dev/null 2>&1 &
 
