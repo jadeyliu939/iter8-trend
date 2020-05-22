@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 20,
-  "iteration": 1588957202699,
+  "id": 23,
+  "iteration": 1590151491093,
   "links": [],
   "panels": [
     {
@@ -64,11 +64,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'} >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}) by (time) >= 0",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "intervalFactor": 1,
-          "legendFormat": "{{name}}",
+          "legendFormat": "{{time}}",
           "refId": "A"
         }
       ],
@@ -132,7 +132,7 @@
       "pageSize": null,
       "showHeader": true,
       "sort": {
-        "col": 4,
+        "col": 8,
         "desc": false
       },
       "styles": [
@@ -205,6 +205,7 @@
           ],
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 2,
+          "link": false,
           "mappingType": 1,
           "pattern": "time",
           "thresholds": [],
@@ -367,9 +368,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='mem'} >= 0",
-          "instant": true,
-          "legendFormat": "{{name}}",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}) by (time) >= 0",
+          "instant": false,
+          "legendFormat": "{{time}}",
           "refId": "A"
         }
       ],
@@ -391,7 +392,7 @@
         "name": null,
         "show": false,
         "values": [
-          "total"
+          "min"
         ]
       },
       "yaxes": [
@@ -458,10 +459,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'} * 100 >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}) by (time) * 100 >= 0",
           "format": "time_series",
-          "instant": true,
-          "legendFormat": "{{name}}",
+          "instant": false,
+          "legendFormat": "{{time}}",
           "refId": "A"
         }
       ],
@@ -483,7 +484,7 @@
         "name": null,
         "show": false,
         "values": [
-          "total"
+          "min"
         ]
       },
       "yaxes": [
@@ -550,9 +551,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='diskreadbytes'} >= 0",
-          "instant": true,
-          "legendFormat": "{{name}}",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='diskreadbytes'}) by (time) >= 0",
+          "instant": false,
+          "legendFormat": "{{time}}",
           "refId": "A"
         }
       ],
@@ -574,7 +575,7 @@
         "name": null,
         "show": false,
         "values": [
-          "total"
+          "min"
         ]
       },
       "yaxes": [
@@ -641,9 +642,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='diskwritebytes'} >= 0",
-          "instant": true,
-          "legendFormat": "{{name}}",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='diskwritebytes'}) by (time) >= 0",
+          "instant": false,
+          "legendFormat": "{{time}}",
           "refId": "A"
         }
       ],
@@ -665,7 +666,7 @@
         "name": null,
         "show": false,
         "values": [
-          "total"
+          "min"
         ]
       },
       "yaxes": [
@@ -731,9 +732,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='networkreadbytes'} >= 0",
-          "instant": true,
-          "legendFormat": "{{name}}",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='networkreadbytes'}) by (time) >= 0",
+          "instant": false,
+          "legendFormat": "{{time}}",
           "refId": "A"
         }
       ],
@@ -755,7 +756,7 @@
         "name": null,
         "show": false,
         "values": [
-          "total"
+          "min"
         ]
       },
       "yaxes": [
@@ -821,9 +822,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "iter8_trend{namespace='$namespace', service_name='$service', metric='networkwritebytes'} >= 0",
-          "instant": true,
-          "legendFormat": "{{name}}",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='networkwritebytes'}) by (time) >= 0",
+          "instant": false,
+          "legendFormat": "{{time}}",
           "refId": "A"
         }
       ],
@@ -845,7 +846,7 @@
         "name": null,
         "show": false,
         "values": [
-          "total"
+          "min"
         ]
       },
       "yaxes": [
@@ -992,5 +993,5 @@
   "timezone": "",
   "title": "Iter8 Trend",
   "uid": "krYN7ZuWz",
-  "version": 7
+  "version": 2
 }
