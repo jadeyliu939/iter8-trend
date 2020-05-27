@@ -4,7 +4,7 @@
 if [[ "$TRAVIS_BRANCH" == "master" ]] || [[ "$TRAVIS_BRANCH" =~ ^v[0-9]+\.[0-9]+$ ]] ; then
   echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin;
   # Only build images when commits are done on these branches
-  if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
     export IMG="iter8/iter8-trend:$TRAVIS_BUILD_NUMBER-$TRAVIS_COMMIT";
     echo "Building PR Docker image = $IMG";
     make docker-build;
