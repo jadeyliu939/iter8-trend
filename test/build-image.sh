@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Only build images for master and v[0-9]+.[0-9]+ release branches
 if [[ "$TRAVIS_BRANCH" == "master" ]] || [[ "$TRAVIS_BRANCH" =~ ^v[0-9]+\.[0-9]+$ ]] ; then
