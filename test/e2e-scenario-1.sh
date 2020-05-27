@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-echo "*** Start iter8-trend end-to-end testing ***"
+echo "*** Start iter8 end-to-end testing ***"
 
 echo ""
 echo "===================================="
@@ -73,4 +73,4 @@ if [ "$conclusion" != "All success criteria were  met" ]; then
   echo "Experiment failed unexpectedly!"
   exit 1
 fi
-echo "Experiment succeeded!"
+echo "Experiment succeeded as expected!"
