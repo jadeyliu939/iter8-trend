@@ -6,7 +6,7 @@ set -e
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 source "$DIR/library.sh"
 
-header "Scenario #4"
+header "Scenario 4"
 
 header "Create Iter8 Custom Metric"
 kubectl apply -n iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/iter8_metrics_extended.yaml

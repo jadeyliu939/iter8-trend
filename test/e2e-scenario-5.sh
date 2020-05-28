@@ -8,7 +8,7 @@ source "$DIR/library.sh"
 
 # This scenario reuses the Istio Gateway and Virtual Service created in scenario 1
 
-header "Scenario #5"
+header "Scenario 5"
 
 header "Create Iter8 Experiment"
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/canary_productpage-v1_to_productpage-v2.yaml

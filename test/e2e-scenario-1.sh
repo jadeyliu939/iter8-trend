@@ -8,7 +8,7 @@ source "$DIR/library.sh"
 
 header "Start iter8 end-to-end testing"
 
-header "Scenario #1"
+header "Scenario 1"
 
 header "Create bookinfo-iter8 namespace"
 kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/namespace.yaml
