@@ -1,7 +1,4 @@
-#!/bin/sh
-
-# Exit on error
-#set -e
+#!/usr/bin/env bash
 
 MINIKUBE_VERSION=v1.8.1
 MINIKUBE_WANTUPDATENOTIFICATION=false

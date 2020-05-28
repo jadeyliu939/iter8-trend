@@ -1,14 +1,17 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+# Exit on error
+set -e 
+
+DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
+source "$DIR/library.sh"
 
 # This is called after an Iter8 experiment is finished. We give an additional
 # 60 seconds before testing if Iter8-trend is emitting data via its Prometheus
 # scrape target
 sleep 60
- 
-echo ""
-echo "===================================="
-echo "Verify results"
-echo "===================================="
+
+header "Verify results"
 
 IP=`kubectl -n iter8 get services | grep iter8-trend | awk '{print $3}'`
 PORT=`kubectl -n iter8 get services | grep iter8-trend | awk '{print $5}' | awk -F/ '{print $1}'`

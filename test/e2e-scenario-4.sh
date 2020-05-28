@@ -1,40 +1,28 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Exit on error
 set -e
 
-echo ""
-echo "===================================="
-echo "Scenario #4"
-echo "===================================="
+DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
+source "$DIR/library.sh"
 
-echo ""
-echo "===================================="
-echo "Create Iter8 Custom Metric"
-echo "===================================="
+header "Scenario #4"
+
+header "Create Iter8 Custom Metric"
 kubectl apply -n iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/iter8_metrics_extended.yaml
 kubectl get configmap iter8config-metrics -n iter8 -oyaml
 
-echo ""
-echo "===================================="
-echo "Create Iter8 Experiment"
-echo "===================================="
+header "Create Iter8 Experiment"
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/canary_reviews-v3_to_reviews-v6.yaml
 kubectl get experiments -n bookinfo-iter8
 
-echo ""
-echo "===================================="
-echo "Deploy canary version"
-echo "===================================="
+header "Deploy canary version"
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/reviews-v6.yaml
 sleep 1
 kubectl wait --for=condition=ExperimentCompleted -n bookinfo-iter8 experiments.iter8.tools reviews-v6-rollout --timeout=300s
 kubectl get experiments -n bookinfo-iter8
 
-echo ""
-echo "===================================="
-echo "Test results"
-echo "===================================="
+header "Test results"
 kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v6-rollout -o yaml
 conclusion=`kubectl -n bookinfo-iter8 get experiments.iter8.tools reviews-v6-rollout -o=jsonpath='{.status.assessment.conclusions[0]}'`
 if [ "$conclusion" != "All success criteria were  met" ]; then
