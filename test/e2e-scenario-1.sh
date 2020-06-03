@@ -16,7 +16,7 @@ kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/
 header "Create bookinfo-iter8 app"
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/bookinfo-tutorial.yaml
 sleep 1
-kubectl wait --for=condition=Ready pods --all -n bookinfo-iter8 --timeout=300s
+kubectl wait --for=condition=Ready pods --all -n bookinfo-iter8 --timeout=600s
 kubectl get pods,services -n bookinfo-iter8
 
 header "Create bookinfo-iter8 gateway and vs"
@@ -42,7 +42,7 @@ kubectl get experiments -n bookinfo-iter8
 header "Deploy canary version"
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/reviews-v3.yaml
 sleep 1
-kubectl wait --for=condition=ExperimentCompleted -n bookinfo-iter8 experiments.iter8.tools reviews-v3-rollout --timeout=300s
+kubectl wait --for=condition=ExperimentCompleted -n bookinfo-iter8 experiments.iter8.tools reviews-v3-rollout --timeout=600s
 kubectl get experiments -n bookinfo-iter8
 
 header "Test results"

@@ -12,5 +12,5 @@ istio-${ISTIO_VERSION}/bin/istioctl version
 istio-${ISTIO_VERSION}/bin/istioctl manifest apply --set profile=demo \
 --set values.kiali.enabled=false --set values.grafana.enabled=false
 sleep 1
-kubectl wait --for=condition=Ready pods --all -n istio-system --timeout=300s
+kubectl wait --for=condition=Ready pods --all -n istio-system --timeout=600s
 kubectl -n istio-system get pods
