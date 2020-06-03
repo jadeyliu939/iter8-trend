@@ -10,5 +10,5 @@ kubectl apply -f https://github.com/iter8-tools/iter8-analytics/releases/latest/
 # `kubectl apply` doesn't register for `kubectl wait` before, so
 # adding 1 sec wait time for the operation to fully register
 sleep 1
-kubectl wait --for=condition=Ready pods --all -n iter8 --timeout=300s
+kubectl wait --for=condition=Ready pods --all -n iter8 --timeout=600s
 kubectl -n iter8 get pods

@@ -17,7 +17,7 @@ kubectl get experiments -n bookinfo-iter8
 header "Deploy canary version"
 kubectl apply -n bookinfo-iter8 -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/doc/tutorials/istio/bookinfo/productpage-v2.yaml
 sleep 1
-kubectl wait --for=condition=ExperimentCompleted -n bookinfo-iter8 experiments.iter8.tools productpage-v2-rollout --timeout=300s
+kubectl wait --for=condition=ExperimentCompleted -n bookinfo-iter8 experiments.iter8.tools productpage-v2-rollout --timeout=600s
 kubectl get experiments -n bookinfo-iter8
 kubectl get vs bookinfo -n bookinfo-iter8 -o yaml
 
