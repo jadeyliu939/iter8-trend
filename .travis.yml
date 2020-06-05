@@ -11,9 +11,9 @@ stages:
 _end_to_end_script: &end_to_end_script
   script:
     - git clone https://github.com/iter8-tools/iter8-controller.git
-    - iter8-tools/test/e2e/install-minikube.sh
-    - iter8-tools/test/e2e/sanity-check.sh
-    - iter8-tools/test/e2e/install-istio.sh
+    - iter8-controller/test/e2e/install-minikube.sh
+    - iter8-controller/test/e2e/sanity-check.sh
+    - iter8-controller/test/e2e/install-istio.sh
     - test/install-iter8.sh
     - test/install-iter8-trend.sh
     - test/e2e-test.sh
