@@ -10,9 +10,10 @@ stages:
 # Define yaml anchor to be reused across testing matrix
 _end_to_end_script: &end_to_end_script
   script:
-    - test/install-minikube.sh
-    - test/sanity-check.sh
-    - test/install-istio.sh
+    - git clone https://github.com/iter8-tools/iter8-controller.git
+    - iter8-tools/test/e2e/install-minikube.sh
+    - iter8-tools/test/e2e/sanity-check.sh
+    - iter8-tools/test/e2e/install-istio.sh
     - test/install-iter8.sh
     - test/install-iter8-trend.sh
     - test/e2e-test.sh

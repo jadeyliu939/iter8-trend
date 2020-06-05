@@ -4,7 +4,7 @@
 set -e 
 
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
-source "$DIR/library.sh"
+source "$DIR/../iter8-controller/test/e2e/library.sh"
 
 # This is called after an Iter8 experiment is finished. We give an additional
 # 60 seconds before testing if Iter8-trend is emitting data via its Prometheus

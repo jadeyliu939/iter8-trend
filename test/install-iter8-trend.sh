@@ -3,10 +3,15 @@
 # Exit on error
 set -e
 
+DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
+source "$DIR/../iter8-controller/test/e2e/library.sh"
+
 # Build a new Iter8-trend image based on the new code
+header "build iter8-trend"
 IMG=iter8-trend:test make docker-build
 
 # Install Helm (from bleeding edge)
+header "install helm"
 curl -fsSL https://get.helm.sh/helm-v2.16.7-linux-amd64.tar.gz | tar xvzf - && sudo mv linux-amd64/helm /usr/local/bin
 
 # Create new Helm template based on the new image
@@ -19,6 +24,7 @@ helm template install/kubernetes/helm/iter8-trend/ --name iter8-trend \
 cat install/kubernetes/iter8-trend.yaml
 
 # Install Iter8-trend
+header "install iter8-trend"
 kubectl apply -f install/kubernetes/iter8-trend.yaml
 
 # Check if Iter8 pods are all up and running. However, sometimes
