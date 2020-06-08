@@ -1,4 +1,4 @@
-# Iter8-trend
+# Iter8-trend 
 This is an optional component to [Iter8](http://github.com/iter8-tools) and
 cannot run standalone. It should be installed either as part of Iter8
 installation process or separately after Iter8 is installed.
