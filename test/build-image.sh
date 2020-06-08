@@ -7,7 +7,3 @@ export IMG="iter8/iter8-trend:$TRAVIS_BRANCH";
 echo "Building PR Docker image = $IMG";
 make docker-build;
 make docker-push;
-LATEST="iter8/iter8-trend:latest";
-docker tag $IMG $LATEST;
-export IMG=$LATEST;
-make docker-push;
