@@ -9,12 +9,12 @@ Watch the following short video to get started:
 
 [![Short Video](https://img.youtube.com/vi/FOtyqJPMj14/hqdefault.jpg)](https://youtu.be/FOtyqJPMj14)
 
-### Run Iter8-trend
+### Install
 ```
 kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/install/kubernetes/iter8-trend.yaml
 ```
 
-### Visualize trend
+### Visualization
 Iter8-trend implements a Prometheus scrape target, so its data can be collected
 by Prometheus and visualized in Grafana. To enable your Prometheus to scrape
 Iter8-trend, follow these [steps](docs/prometheus.md). Once this is completed,
@@ -32,11 +32,11 @@ curl -Ls https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/grafan
 | /bin/bash -
 ```
 
-### Uninstall Iter8-trend
+### Uninstall
 ```
 kubectl delete -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/install/kubernetes/iter8-trend.yaml
 ```
 
-## For developers
+## For Developers
 
 For developers who like to hack the code and/or build your own image from the code, follow these [instructions](docs/devs.md)
