@@ -5,6 +5,7 @@ installation process or separately after Iter8 is installed.
 
 ## Getting started
 
+Watch the following short video to get started:
 [![Short Video](https://img.youtube.com/vi/FOtyqJPMj14/hqdefault.jpg)](https://youtu.be/FOtyqJPMj14)
 
 ### Run Iter8-trend
