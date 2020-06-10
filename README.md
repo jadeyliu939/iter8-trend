@@ -5,6 +5,8 @@ installation process or separately after Iter8 is installed.
 
 ## Getting started
 
+[![Short Video](https://img.youtube.com/vi/FOtyqJPMj14/hqdefault.jpg)](https://youtu.be/FOtyqJPMj14)
+
 ### Run Iter8-trend
 ```
 kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/install/kubernetes/iter8-trend.yaml
