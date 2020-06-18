@@ -8,8 +8,8 @@ instance. This section describes how to configure Prometheus instance that came
 with Istio to collect Iter8-trend data.
 
 1. This Prometheus instance uses a configuration file instantiated from a
-Kubernetes configmap. We need to add a new scrape target in the configuration
-file. This can be achieved by editing the configmap.
+Kubernetes configmap. You will need to add a new scrape target to start
+scraping Iter8-trend data. This can be achieved by editing the configmap.
 ```
 kubectl -n istio-system edit configmap prometheus
 ```
@@ -20,12 +20,15 @@ in the list of jobs, copy and paste the following to this list
       - targets: ['iter8-trend.iter8:8888']
 ```
 
-2. The Prometheus instance in Istio is configured to only retain 6 hours of data
-(Prometheus's default is 15 days). As we are interested in long term trends, we
-need to retain data for longer period of time. A caveat is with longer retention
-period, Prometheus instance would require more resources to run, which is beyond
-the scope of the instructions here. If developers/product managers are
-interested in retaining 1 week of data, he can edit the Prometheus deployment:
+2. (Optional) Iter8-trend has no persistent storage, and relies on metric data
+persisted in Prometheus. However, the Prometheus instance in Istio is configured
+to only retain 6 hours of data (Prometheus's default is 15 days). As we are
+interested in long term trends, we need to retain data for longer period of
+time.  A caveat is with longer retention period, Prometheus instance would
+require more resources to run, which is beyond the scope of the instructions
+here. If developers/product managers are interested in retaining 1 week of data,
+he can edit the Prometheus deployment by doing:
+
 ```
 kubectl -n istio-system edit deployment prometheus
 ```
