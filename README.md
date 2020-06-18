@@ -7,7 +7,7 @@ installation process or separately after Iter8 is installed.
 
 ### Run Iter8-trend
 ```
-kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/install/kubernetes/iter8-trend.yaml
+kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/install/kubernetes/iter8-trend.yaml
 ```
 
 ### Visualize trend
@@ -23,14 +23,14 @@ kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=gr
 
 Then, we import Iter8-trend dashboard in Grafana.
 ```
-export DASHBOARD_DEFN=https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/grafana/iter8-trend.json
-curl -Ls https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/grafana/install.sh \
+export DASHBOARD_DEFN=https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/grafana/iter8-trend.json
+curl -Ls https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/grafana/install.sh \
 | /bin/bash -
 ```
 
 ### Uninstall Iter8-trend
 ```
-kubectl delete -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/install/kubernetes/iter8-trend.yaml
+kubectl delete -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/install/kubernetes/iter8-trend.yaml
 ```
 
 ## For developers
