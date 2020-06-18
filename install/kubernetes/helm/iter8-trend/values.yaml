@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: iter8/iter8-trend
-  tag: latest
+  tag: v0.2
   pullPolicy: Always
 
 namespace: iter8

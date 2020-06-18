@@ -1,4 +1,4 @@
-IMG ?= iter8/iter8-trend:latest
+IMG ?= iter8/iter8-trend:v0.2
 
 docker-build:
 	docker build . -t ${IMG}
