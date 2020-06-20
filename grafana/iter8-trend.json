@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 23,
-  "iteration": 1590151491093,
+  "id": 14,
+  "iteration": 1592660766939,
   "links": [],
   "panels": [
     {
@@ -64,11 +64,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}) by (time) >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}) by (name, time) >= 0",
           "format": "time_series",
-          "instant": false,
+          "instant": true,
           "intervalFactor": 1,
-          "legendFormat": "{{time}}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -341,6 +341,7 @@
         "x": 0,
         "y": 19
       },
+      "hiddenSeries": false,
       "id": 8,
       "interval": "",
       "legend": {
@@ -368,9 +369,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}) by (time) >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='mem'}) by (name, time) >= 0",
           "instant": false,
-          "legendFormat": "{{time}}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -433,6 +434,7 @@
         "x": 11,
         "y": 19
       },
+      "hiddenSeries": false,
       "id": 6,
       "legend": {
         "avg": false,
@@ -459,10 +461,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}) by (time) * 100 >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='cpu'}) by (name, time) * 100 >= 0",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "{{time}}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -524,6 +526,7 @@
         "x": 0,
         "y": 27
       },
+      "hiddenSeries": false,
       "id": 12,
       "legend": {
         "alignAsTable": false,
@@ -551,9 +554,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='diskreadbytes'}) by (time) >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='diskreadbytes'}) by (name, time) >= 0",
           "instant": false,
-          "legendFormat": "{{time}}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -615,6 +618,7 @@
         "x": 11,
         "y": 27
       },
+      "hiddenSeries": false,
       "id": 14,
       "interval": "",
       "legend": {
@@ -642,9 +646,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='diskwritebytes'}) by (time) >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='diskwritebytes'}) by (name, time) >= 0",
           "instant": false,
-          "legendFormat": "{{time}}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -706,6 +710,7 @@
         "x": 0,
         "y": 35
       },
+      "hiddenSeries": false,
       "id": 16,
       "legend": {
         "avg": false,
@@ -732,9 +737,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='networkreadbytes'}) by (time) >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='networkreadbytes'}) by (name, time) >= 0",
           "instant": false,
-          "legendFormat": "{{time}}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -796,6 +801,7 @@
         "x": 11,
         "y": 35
       },
+      "hiddenSeries": false,
       "id": 18,
       "legend": {
         "avg": false,
@@ -822,9 +828,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='networkwritebytes'}) by (time) >= 0",
+          "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='networkwritebytes'}) by (name, time) >= 0",
           "instant": false,
-          "legendFormat": "{{time}}",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -874,7 +880,7 @@
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 20,
+  "schemaVersion": 21,
   "style": "dark",
   "tags": [
     "iter8"
