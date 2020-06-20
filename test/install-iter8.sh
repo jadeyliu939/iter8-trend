@@ -7,11 +7,8 @@ DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 source "$DIR/../iter8-controller/test/e2e/library.sh"
 
 # Install Iter8
-header "Install iter8-controller"
-kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/v0.2/install/iter8-controller.yaml
-
-header "Install iter8-analytics"
-kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-analytics/v0.2/install/kubernetes/iter8-analytics.yaml
+header "Install iter8"
+curl -L -s https://raw.githubusercontent.com/iter8-tools/iter8-controller/v0.2/install/install.sh | /bin/bash -
 
 # Check if Iter8 pods are all up and running. However, sometimes
 # `kubectl apply` doesn't register for `kubectl wait` before, so
