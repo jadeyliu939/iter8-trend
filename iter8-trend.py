@@ -41,6 +41,15 @@ class Experiment:
 				self.candidate = e['spec']['targetService']['candidate']
 			if 'name' in e['spec']['targetService']:
 				self.serviceName = e['spec']['targetService']['name']
+			else:
+				# supporting service-based experiment no longer guarantees
+				# 'targetService.name` always exists
+				if 'hosts' in e['spec']['targetService']:
+					self.serviceName = e['spec']['targetService']['hosts'][0]['name']
+				else:
+					# this should never happen
+					logger.warning(f"Cannot identify a unique identifier for this experiment {e['spec']['targetService']}")
+					self.serviceName = "unidentified"
 
 		if 'status' in e:
 			if 'conditions' in e['status']:
