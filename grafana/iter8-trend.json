@@ -909,7 +909,7 @@
           }
         ],
         "query": "label_values(iter8_trend, namespace)",
-        "refresh": 0,
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -941,7 +941,7 @@
           }
         ],
         "query": "label_values(iter8_trend, service_name)",
-        "refresh": 0,
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
