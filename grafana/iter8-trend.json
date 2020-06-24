@@ -66,7 +66,7 @@
         {
           "expr": "min(iter8_trend{namespace='$namespace', service_name='$service', metric='$metric'}) by (name, time) >= 0",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "intervalFactor": 1,
           "legendFormat": "{{name}}",
           "refId": "A"
