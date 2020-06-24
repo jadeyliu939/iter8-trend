@@ -11,17 +11,35 @@ kubectl apply -f https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/
 ```
 
 ### Visualize trend
-Iter8-trend implements a Prometheus scrape target, so its data can be collected
-by Prometheus and visualized in Grafana. To enable your Prometheus to scrape
-Iter8-trend, follow these [steps](docs/prometheus.md). Once this is completed,
-follow these instructions:
+Iter8-trend implements a Prometheus scrape target, so summarized metric data can
+be collected by Prometheus and visualized in Grafana. To enable Prometheus to
+scrape Iter8-trend, you need to add a new scrape target to Prometheus
+configuration, e.g., in Istio, you do the following:
+  
+```
+kubectl -n istio-system edit configmap prometheus
+```
 
-First, we use `port-forward` to make Grafana available on `localhost:3000`:
+In the list of jobs, copy and paste the following at the bottom of the job list:
+
+```
+    - job_name: 'iter8_trend'
+      static_configs:
+      - targets: ['iter8-trend.iter8:8888']
+```
+
+and then restart the Prometheus pod for the change to take effect:
+
+```
+kubectl -n istio-system delete pod prometheus-xxx-yyy
+```
+
+Then, we use `port-forward` to make Grafana available on `localhost:3000`:
 ```
 kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000
 ```
 
-Then, we import Iter8-trend dashboard in Grafana.
+Finally, we import Iter8-trend dashboard in Grafana.
 ```
 export DASHBOARD_DEFN=https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/grafana/iter8-trend.json
 curl -Ls https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/grafana/install.sh \
