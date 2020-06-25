@@ -49,7 +49,7 @@ jobs:
       if: (type = push) AND (branch =~ /^v[0-9]+\.[0-9]+/)
       deploy:
         provider: releases
-        api_key: 01a8141a8c3a76726add0b4e4d13f5e69c65d0ef
+        api_key: $GITHUB_TOKEN
         file: install/kubernetes/iter8-trend.yaml
         draft: true
         skip_cleanup: true
