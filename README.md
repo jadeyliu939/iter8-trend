@@ -45,9 +45,8 @@ kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=gr
 
 Finally, we import Iter8-trend dashboard in Grafana.
 ```
-export DASHBOARD_DEFN=https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/grafana/iter8-trend.json
-curl -Ls https://raw.githubusercontent.com/iter8-tools/iter8-trend/master/grafana/install.sh \
-| /bin/bash -
+curl -Ls https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/grafana/install.sh \
+| DASHBOARD_DEFN=https://raw.githubusercontent.com/iter8-tools/iter8-trend/v0.2/grafana/iter8-trend.json /bin/bash -
 ```
 
 ### Uninstall
