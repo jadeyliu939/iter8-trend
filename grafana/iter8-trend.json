@@ -2,6 +2,7 @@
   "annotations": {
     "list": [
       {
+        "$$hashKey": "object:148",
         "builtIn": 1,
         "datasource": "-- Grafana --",
         "enable": true,
@@ -15,8 +16,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 14,
-  "iteration": 1592660766939,
+  "id": 10,
+  "iteration": 1593537615755,
   "links": [],
   "panels": [
     {
@@ -128,7 +129,6 @@
         "y": 11
       },
       "id": 2,
-      "options": {},
       "pageSize": null,
       "showHeader": true,
       "sort": {
@@ -196,7 +196,7 @@
         },
         {
           "alias": "Time",
-          "align": "left",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -214,7 +214,7 @@
         },
         {
           "alias": "",
-          "align": "left",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -231,7 +231,7 @@
         },
         {
           "alias": "",
-          "align": "left",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -248,7 +248,7 @@
         },
         {
           "alias": "",
-          "align": "left",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -265,7 +265,7 @@
         },
         {
           "alias": "",
-          "align": "left",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -282,6 +282,7 @@
         },
         {
           "alias": "",
+          "align": "auto",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -880,7 +881,7 @@
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 21,
+  "schemaVersion": 22,
   "style": "dark",
   "tags": [
     "iter8"
@@ -891,23 +892,18 @@
         "allValue": null,
         "current": {
           "tags": [],
-          "text": "bookinfo-iter8",
-          "value": "bookinfo-iter8"
+          "text": "bookinfo-service",
+          "value": "bookinfo-service"
         },
         "datasource": "Prometheus",
         "definition": "label_values(iter8_trend, namespace)",
         "hide": 0,
         "includeAll": false,
+        "index": -1,
         "label": "Namespace",
         "multi": false,
         "name": "namespace",
-        "options": [
-          {
-            "selected": true,
-            "text": "bookinfo-iter8",
-            "value": "bookinfo-iter8"
-          }
-        ],
+        "options": [],
         "query": "label_values(iter8_trend, namespace)",
         "refresh": 1,
         "regex": "",
@@ -922,25 +918,19 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
-          "text": "reviews",
-          "value": "reviews"
+          "text": "productpage.example.com",
+          "value": "productpage.example.com"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(iter8_trend, service_name)",
+        "definition": "label_values(iter8_trend{namespace='$namespace'}, service_name)",
         "hide": 0,
         "includeAll": false,
+        "index": -1,
         "label": "Service",
         "multi": false,
         "name": "service",
-        "options": [
-          {
-            "selected": true,
-            "text": "reviews",
-            "value": "reviews"
-          }
-        ],
-        "query": "label_values(iter8_trend, service_name)",
+        "options": [],
+        "query": "label_values(iter8_trend{namespace='$namespace'}, service_name)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -958,14 +948,15 @@
           "value": "iter8_latency"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(iter8_trend, metric)",
+        "definition": "label_values(iter8_trend{namespace='$namespace',service_name='$service'}, metric)",
         "hide": 0,
         "includeAll": false,
+        "index": -1,
         "label": "Metric",
         "multi": false,
         "name": "metric",
         "options": [],
-        "query": "label_values(iter8_trend, metric)",
+        "query": "label_values(iter8_trend{namespace='$namespace',service_name='$service'}, metric)",
         "refresh": 1,
         "regex": "^(?!cpu$|mem$|diskreadbytes$|diskwritebytes$|networkreadbytes$|networkwritebytes$).*",
         "skipUrlSync": false,
@@ -999,5 +990,8 @@
   "timezone": "",
   "title": "Iter8 Trend",
   "uid": "krYN7ZuWz",
+  "variables": {
+    "list": []
+  },
   "version": 2
 }
