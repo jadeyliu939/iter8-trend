@@ -84,6 +84,10 @@ class Experiment:
                 except ValueError:
                     self.candidate_data[m] = -1
 
+        # Used by Kiali only
+        self.candidate_app = ''
+        self.candidate_version = ''
+
     # Prints an Experiment Custom Resource
     def __str__(self):
         s = f"{self.namespace}.{self.name}(service:{self.service_name}, " \
@@ -101,7 +105,10 @@ class Experiment:
         interval_str = str(int(interval.total_seconds())) + 's'
         offset = now-end
         offset_str = str(int(offset.total_seconds())) + 's'
-        entity_labels = 'destination_service_namespace, destination_workload'
+        entity_labels = 'destination_service_namespace, destination_workload, destination_app, destination_version'
+        # destination_service_namespace and destination_workload are used to
+        # find the relevant results from Prometheus. destination_app and
+        # destination_version are used for Kiali
 
         kwargs = {
             "interval": interval_str,
@@ -132,11 +139,6 @@ class Experiment:
         query_template = Template(query_template)
         query = query_template.substitute(**kwargs)
         return query
-
-    # Set summary metric data for candidate version
-    # Default is -1 or if Prometheus has no data (expired)
-    def set_candidate_data(self, metric, data):
-        self.candidate_data[metric] = data
 
 # This is the main engine that watches a K8s cluster for Iter8 Experiment
 # Custom Resources and query Prometheus for summary performance metrics
@@ -183,12 +185,12 @@ class Iter8Watcher:
                     self.experiments[exp.namespace + ':' + exp.name] = exp
                     for metric in exp.query_template:
                         self.query_prometheus_metrics(metric, exp)
-                    exp.set_candidate_data('cpu', self.query_prometheus_cpu(exp.candidate, exp))
-                    exp.set_candidate_data('mem', self.query_prometheus_mem(exp.candidate, exp))
-                    exp.set_candidate_data('diskreadbytes', self.query_prometheus_disk_read_bytes(exp.candidate, exp))
-                    exp.set_candidate_data('diskwritebytes', self.query_prometheus_disk_write_bytes(exp.candidate, exp))
-                    exp.set_candidate_data('networkreadbytes', self.query_prometheus_network_read_bytes(exp.candidate, exp))
-                    exp.set_candidate_data('networkwritebytes', self.query_prometheus_network_write_bytes(exp.candidate, exp))
+                    exp.candidate_data['cpu'] = self.query_prometheus_cpu(exp.candidate, exp)
+                    exp.candidate_data['mem'] = self.query_prometheus_mem(exp.candidate, exp)
+                    exp.candidate_data['diskreadbytes'] = self.query_prometheus_disk_read_bytes(exp.candidate, exp)
+                    exp.candidate_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.candidate, exp)
+                    exp.candidate_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.candidate, exp)
+                    exp.candidate_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.candidate, exp)
                     logger.info(exp)
         except client.rest.ApiException as e:
             logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
@@ -206,9 +208,12 @@ class Iter8Watcher:
                     if 'metric' in res and 'value' in res:
                         m = res['metric']
                         v = res['value']
-                        if m['destination_workload'] == exp.candidate:
+                        if m['destination_workload'] == exp.candidate and \
+                           m['destination_service_namespace'] == exp.namespace:
                             # v[0] is the timestamp, v[1] is the value here
-                            exp.set_candidate_data(metric, v[1])
+                            exp.candidate_data[metric] = v[1]
+                            exp.candidate_app = m['destination_app']
+                            exp.candidate_version = m['destination_version']
             else:
                 logger.warning(f"Prometheus query returned no result ({params}, {response})")
         except requests.exceptions.RequestException as e:
@@ -277,13 +282,15 @@ class Iter8Watcher:
             time.sleep(1)
 
     def collect(self):
-        g = GaugeMetricFamily('iter8_trend', '', labels=['namespace', 'name', 'service_name', 'time', 'metric'])
+        g = GaugeMetricFamily('iter8_trend', '', labels=['namespace', 'name', 'service_name', 'time', 'app', 'version', 'metric'])
         for exp in self.experiments:
             for metric in self.experiments[exp].candidate_data:
                 g.add_metric([self.experiments[exp].namespace,
                               self.experiments[exp].name,
                               self.experiments[exp].service_name,
                               self.experiments[exp].end_time,
+                              self.experiments[exp].candidate_app,
+                              self.experiments[exp].candidate_version,
                               metric],
                              float(self.experiments[exp].candidate_data[metric]))
         yield g
@@ -307,12 +314,12 @@ class Iter8Watcher:
                         self.experiments[exp.namespace + ':' + exp.name] = exp
                         for metric in exp.query_template:
                             self.query_prometheus_metrics(metric, exp)
-                        exp.set_candidate_data('cpu', self.query_prometheus_cpu(exp.candidate, exp))
-                        exp.set_candidate_data('mem', self.query_prometheus_mem(exp.candidate, exp))
-                        exp.set_candidate_data('diskreadbytes', self.query_prometheus_disk_read_bytes(exp.candidate, exp))
-                        exp.set_candidate_data('diskwritebytes', self.query_prometheus_disk_write_bytes(exp.candidate, exp))
-                        exp.set_candidate_data('networkreadbytes', self.query_prometheus_network_read_bytes(exp.candidate, exp))
-                        exp.set_candidate_data('networkwritebytes', self.query_prometheus_network_write_bytes(exp.candidate, exp))
+                        exp.candidate_data['cpu'] = self.query_prometheus_cpu(exp.candidate, exp)
+                        exp.candidate_data['mem'] = self.query_prometheus_mem(exp.candidate, exp)
+                        exp.candidate_data['diskreadbytes'] = self.query_prometheus_disk_read_bytes(exp.candidate, exp)
+                        exp.candidate_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.candidate, exp)
+                        exp.candidate_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.candidate, exp)
+                        exp.candidate_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.candidate, exp)
                         logger.info(exp)
 
             except client.rest.ApiException as e:
