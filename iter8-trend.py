@@ -84,9 +84,10 @@ class Experiment:
                 except ValueError:
                     self.candidate_data[m] = -1
 
-        # Used by Kiali only
-        self.candidate_app = ''
-        self.candidate_version = ''
+        # Used by Kiali only. Initialize to unknown since this data is populated
+        # by Istio and put into Prometheus
+        self.candidate_app = 'unknown'
+        self.candidate_version = 'unknown'
 
     # Prints an Experiment Custom Resource
     def __str__(self):
