@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 # Represents an Iter8 Experiment Custom Resource
 class Experiment:
     def __init__(self, e=None):
-        if e == None:
+        if e is None:
             return
 
         if 'metadata' in e and 'namespace' in e['metadata']:
@@ -201,27 +201,27 @@ class Iter8Watcher:
                         if 'candidate' in m:
                             exp.candidate = m['candidate']
                         else:
-                            exp.candidate= 'unknown'
+                            exp.candidate = 'unknown'
 
                         if 'phase' in m:
-                            exp.phase= m['phase']
+                            exp.phase = m['phase']
                         else:
-                            exp.phase= 'unknown'
+                            exp.phase = 'unknown'
 
                         if 'start_time' in m:
                             exp.start_time = m['start_time']
                         else:
-                            exp.start_time= 'unknown'
+                            exp.start_time = 'unknown'
 
                         if 'app' in m:
                             exp.candidate_app = m['app']
                         else:
-                            exp.app = 'unknown'
+                            exp.candidate_app = 'unknown'
 
                         if 'version' in m:
                             exp.candidate_version = m['version']
                         else:
-                            exp.version = 'unknown'
+                            exp.candidate_version = 'unknown'
 
                         if 'service_name' in m:
                             exp.service_name = m['service_name']
@@ -243,7 +243,7 @@ class Iter8Watcher:
             print(self.experiments[exp])
 
     # At the start, we read all the Experiment Custom Resources in
-    # the cluster and query Prometheus for their summary metric data 
+    # the cluster and query Prometheus for their summary metric data
     def load_exp_from_cluster(self):
         logger.info("Loading data from Kubernetes cluster...")
         try:
@@ -300,10 +300,10 @@ class Iter8Watcher:
             response = requests.get(self.prometheus_url, params=params).json()
             if 'data' in response and 'result' in response['data']:
                 return response['data']['result']
-            else:
-                logger.warning(f"Prometheus query returned no result ({params}, {response})")
+            logger.warning(f"Prometheus query returned no result ({params}, {response})")
         except requests.exceptions.RequestException as e:
             logger.warning(f"Problem querying Prometheus ({self.prometheus_url}): {e}")
+        return None
 
 
     # Calls Prometheus to retrieve resource utilization data
