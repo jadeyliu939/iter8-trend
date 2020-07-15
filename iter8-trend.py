@@ -243,7 +243,7 @@ class Iter8Watcher:
             print(self.experiments[exp])
 
     # At the start, we read all the Experiment Custom Resources in
-    # the cluster and query Prometheus for their summary metric data
+    # the cluster and query Prometheus for their summary metric data 
     def load_exp_from_cluster(self):
         logger.info("Loading data from Kubernetes cluster...")
         try:
