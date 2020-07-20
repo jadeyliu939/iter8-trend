@@ -1,4 +1,11 @@
 # Iter8-trend
+
+Iter8-trend collects metrics of past experiments and summarizes them to show
+trends that could expose performance problems creeping up over time, which might
+not be obvious if one only compares consecutive versions during canary testing.
+This is invaluable to developers when tracking down a performance problem and
+pin-pointing it to a particular version that was deployed in the past.
+
 This is an optional component to [Iter8](http://github.com/iter8-tools) and
 cannot run standalone. It should be installed either as part of Iter8
 installation process or separately after Iter8 is installed.
