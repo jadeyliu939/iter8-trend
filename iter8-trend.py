@@ -38,90 +38,72 @@ class Experiment:
         if 'status' in e and 'phase' in e['status']:
             self.phase = e['status']['phase']
 
-        if 'spec' in e and 'targetService' in e['spec']:
-            if 'baseline' in e['spec']['targetService']:
-                self.baseline = e['spec']['targetService']['baseline']
-            if 'candidate' in e['spec']['targetService']:
-                self.candidate = e['spec']['targetService']['candidate']
-            if 'name' in e['spec']['targetService']:
-                self.service_name = e['spec']['targetService']['name']
+        if 'spec' in e and 'service' in e['spec']:
+            if 'baseline' in e['spec']['service']:
+                self.baseline = e['spec']['service']['baseline']
+            if 'candidates' in e['spec']['service']:
+                self.candidates = e['spec']['service']['candidates']
+            if 'name' in e['spec']['service']:
+                self.service_name = e['spec']['service']['name']
             else:
                 # supporting service-based experiment no longer guarantees
-                # 'targetService.name` always exists
-                if 'hosts' in e['spec']['targetService']:
-                    self.service_name = e['spec']['targetService']['hosts'][0]['name']
+                # 'service.name` always exists
+                if 'hosts' in e['spec']['service']:
+                    self.service_name = e['spec']['service']['hosts'][0]['name']
                 else:
                     # this should never happen
-                    logger.warning(f"Cannot identify a unique identifier for this experiment {e['spec']['targetService']}")
+                    logger.warning(f"Cannot identify a unique identifier for this experiment {e['spec']['service']}")
                     self.service_name = "unidentified"
 
+        # Defaults winner to baseline
+        self.winner = self.baseline
+        self.winner_found = False
+        self.winner_data = {}
+        self.is_completed_and_successful = False
         if 'status' in e:
-            if 'conditions' in e['status']:
-                for c in e['status']['conditions']:
-                    if 'type' in c:
-                        if c['type'] == 'RoutingRulesReady':
-                            self.start_time = c['lastTransitionTime']
-                        if c['type'] == 'ExperimentSucceeded':
-                            self.end_time = c['lastTransitionTime']
+            self.start_time = e['status']['startTimestamp']
+            self.end_time = e['status']['endTimestamp']
 
-            self.is_completed_and_successful = False
-            if 'assessment' in e['status'] and 'conclusions' in e['status']['assessment']:
-                if len(e['status']['assessment']['conclusions']) == 1 and \
-                    e['status']['assessment']['conclusions'][0] == 'All success criteria were  met' and \
-                    self.phase == 'Completed':
-                    # Only a Completed and Successful experiment is promoted
-                    self.is_completed_and_successful = True
+            if 'assessment' in e['status']:
+                if 'winner' in e['status']['assessment']:
+                    winner = e['status']['assessment']['winner']
+                    if winner['winning_version_found'] and self.phase == 'Completed':
+                        # Only a Completed and Successful experiment is promoted
+                        self.is_completed_and_successful = True
+                        if 'current_best_version' in winner:
+                            self.winner = winner['current_best_version']
 
-        self.query_template = {}
-        self.absent_value = {}
-        self.candidate_data = {}
-        if 'metrics' in e:
-            for m in e['metrics']:
-                self.query_template[m] = e['metrics'][m]['query_template']
-                self.absent_value[m] = e['metrics'][m]['absent_value']
+                    # Find winner amongst baseline and candidates
+                    if 'baseline' in e['status']['assessment']:
+                        if 'name' in e['status']['assessment']['baseline']:
+                            if e['status']['assessment']['baseline']['name'] == self.winner:
+                                self.populate_winner_data(e['status']['assessment']['baseline']['criterion_assessments'])
+                                self.winner_found = True
 
-                # In case Prometheus doesn't return data either because i) the data is no longer retained
-                # or ii) there is no such data collected, we use its absent_value defined for that metric
-                try:
-                    self.candidate_data[m] = float(self.absent_value[m])
-                except ValueError:
-                    self.candidate_data[m] = -1
+                    if not self.winner_found and 'candidates' in e['status']['assessment']:
+                        for candidate in e['status']['assessment']['candidates']:
+                            if candidate['name'] == self.winner:
+                                self.populate_winner_data(candidate['criterion_assessments'])
+                                break
 
         # Used by Kiali only. Initialize to unknown since this data is populated
         # by Istio and put into Prometheus
-        self.candidate_app = 'unknown'
-        self.candidate_version = 'unknown'
+        self.winner_app = 'unknown'
+        self.winner_version = 'unknown'
+
+    # Populates self.winner_data
+    def populate_winner_data(self, assessments):
+        for assessment in assessments:
+            name = assessment['id']
+            data = assessment['statistics']['value']
+            self.winner_data[name] = data
 
     # Prints an Experiment Custom Resource
     def __str__(self):
         s = f"{self.namespace}.{self.name}(service:{self.service_name}, " \
-            f"baseline:{self.baseline}, candidate:{self.candidate}): " \
-            f"{self.phase} ({self.start_time} - {self.end_time}) [{self.candidate_data}]"
+            f"baseline:{self.baseline}, candidates:{self.candidates}): " \
+            f"{self.phase} ({self.start_time} - {self.end_time}) [{self.winner_data}]"
         return s
-
-    # Convert a query template from an Experiment Custom Resource
-    # to a Prometheus query used to query for a summary metric
-    def get_query_str(self, metric):
-        start = parse(self.start_time)
-        end = parse(self.end_time)
-        now = datetime.now(timezone.utc)
-        interval = end-start
-        interval_str = str(int(interval.total_seconds())) + 's'
-        offset = now-end
-        offset_str = str(int(offset.total_seconds())) + 's'
-        entity_labels = 'destination_service_namespace, destination_workload, destination_app, destination_version'
-        # destination_service_namespace and destination_workload are used to
-        # find the relevant results from Prometheus. destination_app and
-        # destination_version are used for Kiali
-
-        kwargs = {
-            "interval": interval_str,
-            "offset_str": f" offset {offset_str}",
-            "entity_labels": entity_labels,
-        }
-        query_template = Template(self.query_template[metric])
-        query = query_template.substitute(**kwargs)
-        return query
 
     # We also get resource utilization data along with metric data, and
     # this function generates the prometheus query string
@@ -189,7 +171,7 @@ class Iter8Watcher:
                         exp = self.experiments[key]
                     else:
                         exp = Experiment()
-                        exp.candidate_data = {}
+                        exp.winner_data = {}
                         exp.namespace = m['namespace']
                         exp.name = m['name']
 
@@ -198,10 +180,10 @@ class Iter8Watcher:
                         else:
                             exp.baseline = 'unknown'
 
-                        if 'candidate' in m:
-                            exp.candidate = m['candidate']
+                        if 'winner' in m:
+                            exp.winner = m['winner']
                         else:
-                            exp.candidate = 'unknown'
+                            exp.winner = 'unknown'
 
                         if 'phase' in m:
                             exp.phase = m['phase']
@@ -214,14 +196,14 @@ class Iter8Watcher:
                             exp.start_time = 'unknown'
 
                         if 'app' in m:
-                            exp.candidate_app = m['app']
+                            exp.winner_app = m['app']
                         else:
-                            exp.candidate_app = 'unknown'
+                            exp.winner_app = 'unknown'
 
                         if 'version' in m:
-                            exp.candidate_version = m['version']
+                            exp.winner_version = m['version']
                         else:
-                            exp.candidate_version = 'unknown'
+                            exp.winner_version = 'unknown'
 
                         if 'service_name' in m:
                             exp.service_name = m['service_name']
@@ -235,9 +217,9 @@ class Iter8Watcher:
 
                         self.experiments[key] = exp
                     if 'metric' in m:
-                        exp.candidate_data[m['metric']] = float(v[1])
+                        exp.winner_data[m['metric']] = float(v[1])
                     else:
-                        exp.candidate_data[m['metric']] = float(-1)
+                        exp.winner_data[m['metric']] = float(-1)
 
         for exp in self.experiments:
             print(self.experiments[exp])
@@ -249,7 +231,7 @@ class Iter8Watcher:
         try:
             response = self.kubeapi.list_cluster_custom_object(
                 group='iter8.tools',
-                version='v1alpha1',
+                version='v1alpha2',
                 plural='experiments')
             results = json.loads(json.dumps(response, ensure_ascii=False))
             for e in results['items']:
@@ -258,41 +240,18 @@ class Iter8Watcher:
                     continue
                 if exp.is_completed_and_successful:
                     self.experiments[exp.namespace + ':' + exp.name] = exp
-                    for metric in exp.query_template:
-                        self.query_prometheus_metrics(metric, exp)
-                    exp.candidate_data['cpu'] = self.query_prometheus_cpu(exp.candidate, exp)
-                    exp.candidate_data['mem'] = self.query_prometheus_mem(exp.candidate, exp)
-                    exp.candidate_data['diskreadbytes'] = self.query_prometheus_disk_read_bytes(exp.candidate, exp)
-                    exp.candidate_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.candidate, exp)
-                    exp.candidate_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.candidate, exp)
-                    exp.candidate_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.candidate, exp)
+                    exp.winner_data['cpu'] = self.query_prometheus_cpu(exp.winner, exp)
+                    exp.winner_data['mem'] = self.query_prometheus_mem(exp.winner, exp)
+                    exp.winner_data['diskreadbytes'] = self.query_prometheus_disk_read_bytes(exp.winner, exp)
+                    exp.winner_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.winner, exp)
+                    exp.winner_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.winner, exp)
+                    exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
                     logger.info(exp)
         except client.rest.ApiException as e:
             logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
         except Exception as e:
             logger.error(f"Unexpected error: {e}")
             sys.exit(1)
-
-    # Calls Prometheus to retrieve summary metric data for an Experiment
-    def query_prometheus_metrics(self, metric, exp):
-        params = {'query': exp.get_query_str(metric)}
-        try:
-            response = requests.get(self.prometheus_url, params=params).json()
-            if 'data' in response and 'result' in response['data']:
-                for res in response['data']['result']:
-                    if 'metric' in res and 'value' in res:
-                        m = res['metric']
-                        v = res['value']
-                        if m['destination_workload'] == exp.candidate and \
-                           m['destination_service_namespace'] == exp.namespace:
-                            # v[0] is the timestamp, v[1] is the value here
-                            exp.candidate_data[metric] = v[1]
-                            exp.candidate_app = m['destination_app']
-                            exp.candidate_version = m['destination_version']
-            else:
-                logger.warning(f"Prometheus query returned no result ({params}, {response})")
-        except requests.exceptions.RequestException as e:
-            logger.warning(f"Problem querying Prometheus ({self.prometheus_url}): {e}")
 
     def query_prometheus(self, query):
         params = {'query': query}
@@ -372,7 +331,7 @@ class Iter8Watcher:
                                                          'name',
                                                          'service_name',
                                                          'baseline',
-                                                         'candidate',
+                                                         'winner',
                                                          'phase',
                                                          'start_time',
                                                          'time',
@@ -380,19 +339,19 @@ class Iter8Watcher:
                                                          'version',
                                                          'metric'])
         for exp in self.experiments:
-            for metric in self.experiments[exp].candidate_data:
+            for metric in self.experiments[exp].winner_data:
                 g.add_metric([self.experiments[exp].namespace,
                               self.experiments[exp].name,
                               self.experiments[exp].service_name,
                               self.experiments[exp].baseline,
-                              self.experiments[exp].candidate,
+                              self.experiments[exp].winner,
                               self.experiments[exp].phase,
                               self.experiments[exp].start_time,
                               self.experiments[exp].end_time,
-                              self.experiments[exp].candidate_app,
-                              self.experiments[exp].candidate_version,
+                              self.experiments[exp].winner_app,
+                              self.experiments[exp].winner_version,
                               metric],
-                             float(self.experiments[exp].candidate_data[metric]))
+                             float(self.experiments[exp].winner_data[metric]))
         yield g
 
     # Monitors for new Experiments in the cluster and retrieves their
@@ -403,7 +362,7 @@ class Iter8Watcher:
             try:
                 response = self.kubeapi.list_cluster_custom_object(
                     group='iter8.tools',
-                    version='v1alpha1',
+                    version='v1alpha2',
                     plural='experiments')
                 results = json.loads(json.dumps(response, ensure_ascii=False))
                 for e in results['items']:
@@ -412,14 +371,12 @@ class Iter8Watcher:
                         continue
                     if exp.is_completed_and_successful:
                         self.experiments[exp.namespace + ':' + exp.name] = exp
-                        for metric in exp.query_template:
-                            self.query_prometheus_metrics(metric, exp)
-                        exp.candidate_data['cpu'] = self.query_prometheus_cpu(exp.candidate, exp)
-                        exp.candidate_data['mem'] = self.query_prometheus_mem(exp.candidate, exp)
-                        exp.candidate_data['diskreadbytes'] = self.query_prometheus_disk_read_bytes(exp.candidate, exp)
-                        exp.candidate_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.candidate, exp)
-                        exp.candidate_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.candidate, exp)
-                        exp.candidate_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.candidate, exp)
+                        exp.winner_data['cpu'] = self.query_prometheus_cpu(exp.winner, exp)
+                        exp.winner_data['mem'] = self.query_prometheus_mem(exp.winner, exp)
+                        exp.winner_data['diskreadbytes'] = self.query_prometheus_disk_read_bytes(exp.winner, exp)
+                        exp.winner_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.winner, exp)
+                        exp.winner_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.winner, exp)
+                        exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
                         logger.info(exp)
 
             except client.rest.ApiException as e:

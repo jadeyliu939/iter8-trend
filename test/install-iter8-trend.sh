@@ -4,7 +4,7 @@
 set -e
 
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
-source "$DIR/../iter8-controller/test/e2e/library.sh"
+source "$DIR/../iter8/test/e2e/library.sh"
 
 # Build a new Iter8-trend image based on the new code
 header "build iter8-trend"
