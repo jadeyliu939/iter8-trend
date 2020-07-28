@@ -403,7 +403,7 @@ class Iter8Watcher:
             try:
                 response = self.kubeapi.list_cluster_custom_object(
                     group='iter8.tools',
-                    version='v1alpha1',
+                    version='v1alpha2',
                     plural='experiments')
                 results = json.loads(json.dumps(response, ensure_ascii=False))
                 for e in results['items']:
