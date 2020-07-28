@@ -67,7 +67,7 @@ class Experiment:
             if 'assessment' in e['status']:
                 if 'winner' in e['status']['assessment']:
                     winner = e['status']['assessment']['winner']
-                    if winner['winning_version_found'] == True and self.phase == 'Completed':
+                    if winner['winning_version_found'] and self.phase == 'Completed':
                         # Only a Completed and Successful experiment is promoted
                         self.is_completed_and_successful = True
                         if 'current_best_version' in winner:
@@ -94,9 +94,9 @@ class Experiment:
     # Populates self.winner_data
     def populate_winner_data(self, assessments):
         for assessment in assessments:
-            id = assessment['id']
+            name = assessment['id']
             data = assessment['statistics']['value']
-            self.winner_data[id] = data
+            self.winner_data[name] = data
 
     # Prints an Experiment Custom Resource
     def __str__(self):
