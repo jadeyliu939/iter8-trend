@@ -3,9 +3,6 @@
 # This script calls each end-to-end scenario sequentially and verifies the
 # result
 
-# Exit on error
-set -e
-
 DIR="$( cd "$( dirname "$0" )" >/dev/null 2>&1; pwd -P )"
 
 # install yq
@@ -17,6 +14,9 @@ if (( $? )); then
   sudo apt update
   sudo apt install yq -y
 fi
+
+# Exit on error
+set -e
 
 $DIR/../iter8-controller/test/e2e/e2e-scenario-0a.sh
 $DIR/e2e-scenario-0a-verify.sh
