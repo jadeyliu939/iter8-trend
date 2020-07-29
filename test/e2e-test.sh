@@ -21,6 +21,7 @@ set -e
 $DIR/../iter8/test/e2e/e2e-scenario-0a.sh
 $DIR/e2e-scenario-0a-verify.sh
 #$DIR/../iter8/test/e2e/e2e-scenario-0b.sh
+#$DIR/e2e-scenario-0b-verify.sh
 #$DIR/../iter8/test/e2e/e2e-scenario-0c.sh
 #$DIR/../iter8/test/e2e/e2e-scenario-1.sh
 #$DIR/e2e-scenario-1-verify.sh
