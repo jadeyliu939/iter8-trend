@@ -42,7 +42,7 @@ jobs:
       <<: *end_to_end_script
     - stage: "build image"
       # only build images for master and release branches + tagged releases
-      if: (type = push) AND (branch = master OR branch =~ /^v[0-9]+\.[0-9]+(\.[0-9]+)*$/)
+      if: (type = push) AND (branch = master OR branch =~ /^v[0-9]+\.[0-9]+(\.[0-9]+)*.*$/)
       script:
         - test/build-image.sh
     - stage: "release"
