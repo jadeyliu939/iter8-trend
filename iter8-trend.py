@@ -101,7 +101,7 @@ class Experiment:
     # Prints an Experiment Custom Resource
     def __str__(self):
         s = f"{self.namespace}.{self.name}(service:{self.service_name}, " \
-            f"baseline:{self.baseline}, candidates:{self.candidates}): " \
+            f"baseline:{self.baseline}, winner:{self.winner}): " \
             f"{self.phase} ({self.start_time} - {self.end_time}) [{self.winner_data}]"
         return s
 
@@ -175,48 +175,48 @@ class Iter8Watcher:
                         exp.namespace = m['namespace']
                         exp.name = m['name']
 
-                        if 'baseline' in m:
+                        if 'baseline' in m and m['baseline'] != 'unknown':
                             exp.baseline = m['baseline']
                         else:
                             exp.baseline = 'unknown'
 
-                        if 'winner' in m:
+                        if 'winner' in m and m['winner'] != 'unknown':
                             exp.winner = m['winner']
                         else:
                             exp.winner = 'unknown'
 
-                        if 'phase' in m:
+                        if 'phase' in m and m['phase'] != 'unknown':
                             exp.phase = m['phase']
                         else:
                             exp.phase = 'unknown'
 
-                        if 'start_time' in m:
+                        if 'start_time' in m and m['start_time'] != 'unknown':
                             exp.start_time = m['start_time']
                         else:
                             exp.start_time = 'unknown'
 
-                        if 'app' in m:
+                        if 'app' in m and m['app'] != 'unknown':
                             exp.winner_app = m['app']
                         else:
                             exp.winner_app = 'unknown'
 
-                        if 'version' in m:
+                        if 'version' in m and m['version'] != 'unknown':
                             exp.winner_version = m['version']
                         else:
                             exp.winner_version = 'unknown'
 
-                        if 'service_name' in m:
+                        if 'service_name' in m and m['service_name'] != 'unknown':
                             exp.service_name = m['service_name']
                         else:
                             exp.service_name = 'unknown'
 
-                        if 'time' in m:
+                        if 'time' in m and m['time'] != 'unknown':
                             exp.end_time = m['time']
                         else:
                             exp.end_time = 'unknown'
 
                         self.experiments[key] = exp
-                    if 'metric' in m:
+                    if 'metric' in m and float(v[1]) != float(-1):
                         exp.winner_data[m['metric']] = float(v[1])
                     else:
                         exp.winner_data[m['metric']] = float(-1)
