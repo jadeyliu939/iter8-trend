@@ -70,8 +70,8 @@ class Experiment:
                     if winner['winning_version_found'] and self.phase == 'Completed':
                         # Only a Completed and Successful experiment is promoted
                         self.is_completed_and_successful = True
-                        if 'current_best_version' in winner:
-                            self.winner = winner['current_best_version']
+                        if 'name' in winner:
+                            self.winner = winner['name']
 
                     # Find winner amongst baseline and candidates
                     if 'baseline' in e['status']['assessment']:
@@ -219,7 +219,20 @@ class Iter8Watcher:
                     if 'metric' in m and float(v[1]) != float(-1):
                         exp.winner_data[m['metric']] = float(v[1])
                     else:
-                        exp.winner_data[m['metric']] = float(-1)
+                        if m['metric'] == 'cpu':
+                            exp.winner_data['cpu'] = self.query_prometheus_cpu(exp.winner, exp)
+                        elif m['metric'] == 'mem':
+                            exp.winner_data['mem'] = self.query_prometheus_mem(exp.winner, exp)
+                        elif m['metric'] == 'diskreadbytes':
+                            exp.winner_data['diskreadbytes'] = self.query_prometheus_disk_read_bytes(exp.winner, exp)
+                        elif m['metric'] == 'diskwritebytes':
+                            exp.winner_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.winner, exp)
+                        elif m['metric'] == 'networkreadbytes':
+                            exp.winner_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.winner, exp)
+                        elif m['metric'] == 'networkwritebytes':
+                            exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
+                        else:
+                            exp.winner_data[m['metric']] = float(-1)
 
         for exp in self.experiments:
             print(self.experiments[exp])
@@ -268,6 +281,7 @@ class Iter8Watcher:
     # Calls Prometheus to retrieve resource utilization data
     def query_prometheus_resource(self, query_template, podname, exp):
         params = {'query': exp.get_resource_query_str(query_template, podname)}
+        logger.info(f'{params["query"]}')
         try:
             response = requests.get(self.prometheus_url, params=params).json()
             if 'data' in response and 'result' in response['data']:
@@ -392,7 +406,7 @@ class Iter8Watcher:
         # Handles ctrl-c signal
         signal(SIGINT, sighandler)
 
-        self.load_data_from_prometheus()
+        #self.load_data_from_prometheus()
         self.load_exp_from_cluster()
 
         threads = list()
