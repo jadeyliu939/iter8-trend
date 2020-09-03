@@ -35,8 +35,6 @@ class Experiment:
             self.namespace = e['metadata']['namespace']
         if 'metadata' in e and 'name' in e['metadata']:
             self.name = e['metadata']['name']
-        if 'status' in e and 'phase' in e['status']:
-            self.phase = e['status']['phase']
 
         if 'spec' in e and 'service' in e['spec']:
             if 'baseline' in e['spec']['service']:
@@ -55,14 +53,24 @@ class Experiment:
                     logger.warning(f"Cannot identify a unique identifier for this experiment {e['spec']['service']}")
                     self.service_name = "unidentified"
 
+        # Used by Kiali only. Initialize to unknown since this data is populated
+        # by Istio and put into Prometheus
+        self.winner_app = 'unknown'
+        self.winner_version = 'unknown'
+
         # Defaults winner to baseline
         self.winner = self.baseline
         self.winner_found = False
         self.winner_data = {}
         self.is_completed_and_successful = False
         if 'status' in e:
-            self.start_time = e['status']['startTimestamp']
-            self.end_time = e['status']['endTimestamp']
+            if 'phase' in e['status']:
+                self.phase = e['status']['phase']
+
+            if 'startTimestamp' in e['status']:
+                self.start_time = e['status']['startTimestamp']
+            if 'endTimestamp' in e['status']:
+                self.end_time = e['status']['endTimestamp']
 
             if 'assessment' in e['status']:
                 if 'winner' in e['status']['assessment']:
@@ -85,11 +93,6 @@ class Experiment:
                             if candidate['name'] == self.winner:
                                 self.populate_winner_data(candidate['criterion_assessments'])
                                 break
-
-        # Used by Kiali only. Initialize to unknown since this data is populated
-        # by Istio and put into Prometheus
-        self.winner_app = 'unknown'
-        self.winner_version = 'unknown'
 
     # Populates self.winner_data
     def populate_winner_data(self, assessments):
