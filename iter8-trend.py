@@ -343,7 +343,7 @@ class Iter8Watcher:
             time.sleep(1)
 
     def doAddData(self, _g, exp, metric, withMetric):
-        if (withMetric == True) :
+        if withMetric:
             _g.add_metric([self.experiments[exp].namespace,
                                 self.experiments[exp].kubernetes_namespace,
                                 self.experiments[exp].name,
@@ -358,7 +358,7 @@ class Iter8Watcher:
                                 metric],
                                 float(self.experiments[exp].winner_data[metric]))
 
-        else: 
+        else:
             _g.add_metric([self.experiments[exp].namespace,
                               self.experiments[exp].kubernetes_namespace,
                               self.experiments[exp].name,
@@ -384,36 +384,36 @@ class Iter8Watcher:
                 'time',
                 'app',
                 'version']
-        
+
         thisLabel = mlabels.copy()
         thisLabel.append('metric')
         gAll = GaugeMetricFamily('iter8_trend', '', labels=thisLabel)
 
         thisLabel = mlabels.copy()
-        thisLabel.append('diskmetric')  
+        thisLabel.append('diskmetric')
         gDisk = GaugeMetricFamily('iter8_trend_disk', '', labels=thisLabel)
-                                                         
+              
         thisLabel = mlabels.copy()
-        thisLabel.append('networkmetric') 
+        thisLabel.append('networkmetric')
         gNetwork = GaugeMetricFamily('iter8_trend_network', '', labels=thisLabel)
 
         thisLabel = mlabels.copy()
-        thisLabel.append('iter8metric') 
+        thisLabel.append('iter8metric')
         gCustom = GaugeMetricFamily('iter8_trend_custom', '', labels=thisLabel)
-        
+
         gCpu = GaugeMetricFamily('iter8_trend_cpu', '', labels=mlabels)
 
         gMem = GaugeMetricFamily('iter8_trend_mem', '', labels=mlabels)
 
         for exp in self.experiments:
             for metric in self.experiments[exp].winner_data:
-                
+  
                 self.doAddData( gAll, exp, metric, True)
-        
-                if metric == 'networkreadbytes' or metric == 'networkwritebytes' :
+
+                if metric in ('networkreadbytes', 'networkwritebytes'):
                     self.doAddData( gNetwork, exp, metric, True)
 
-                elif metric == 'diskreadbytes' or metric == 'diskwritebytes':
+                elif metric in ('diskreadbytes', 'diskwritebytes'):
                     self.doAddData( gDisk, exp, metric, True)
 
                 elif metric == 'cpu':
