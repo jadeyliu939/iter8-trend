@@ -392,7 +392,7 @@ class Iter8Watcher:
         thisLabel = mlabels.copy()
         thisLabel.append('diskmetric')
         gDisk = GaugeMetricFamily('iter8_trend_disk', '', labels=thisLabel)
-              
+
         thisLabel = mlabels.copy()
         thisLabel.append('networkmetric')
         gNetwork = GaugeMetricFamily('iter8_trend_network', '', labels=thisLabel)
@@ -407,7 +407,7 @@ class Iter8Watcher:
 
         for exp in self.experiments:
             for metric in self.experiments[exp].winner_data:
-  
+
                 self.doAddData( gAll, exp, metric, True)
 
                 if metric in ('networkreadbytes', 'networkwritebytes'):
