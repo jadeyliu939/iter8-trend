@@ -206,6 +206,13 @@ class Iter8Watcher:
 
                         if 'app' in m and m['app'] != 'unknown':
                             exp.winner_app = m['app']
+                        else:
+                            exp.winner_app = 'unknown'
+
+                        if 'version' in m and m['version'] != 'unknown':
+                            exp.winner_version = m['version']
+                        else:
+                            exp.winner_version = 'unknown'
 
                         if 'service_name' in m and m['service_name'] != 'unknown':
                             exp.service_name = m['service_name']
