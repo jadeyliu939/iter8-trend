@@ -95,8 +95,6 @@ class Experiment:
                                 self.populate_winner_data(candidate['criterion_assessments'])
                                 break
 
-                    x = self.winner.split("-")
-                    self.winner_version = x[len(x)-1]
 
     # Populates self.winner_data
     def populate_winner_data(self, assessments):
@@ -159,7 +157,8 @@ class Iter8Watcher:
         except:
             config.load_incluster_config()
         self.kubeapi = client.CustomObjectsApi()
-
+        self.appapi = client.AppsV1Api()
+        
         # All experiments in the cluster
         self.experiments = dict()
 
@@ -268,6 +267,13 @@ class Iter8Watcher:
                     exp.winner_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.winner, exp)
                     exp.winner_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.winner, exp)
                     exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
+                    try:
+                        deployment = self.appapi.read_namespaced_deployment(exp.winner, exp.namespace)
+                        if 'version' in deployment.metadata.labels:
+                            exp.winner_version = deployment.metadata.labels["version"]
+                    except client.rest.ApiException as e:
+                        logger.info("Exception when calling AppsV1Api->read_namespaced_deployment: %s\n" % e)
+
                     logger.info(exp)
         except client.rest.ApiException as e:
             logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
@@ -457,6 +463,13 @@ class Iter8Watcher:
                         exp.winner_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.winner, exp)
                         exp.winner_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.winner, exp)
                         exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
+                        try:
+                            deployment = self.appapi.read_namespaced_deployment(exp.winner, exp.namespace)
+                            if 'version' in deployment.metadata.labels:
+                                exp.winner_version = deployment.metadata.labels["version"]
+                        except client.rest.ApiException as e:
+                            logger.info("Exception when calling AppsV1beta1Api->list_namespaced_deployment: %s\n" % e)
+
                         logger.info(exp)
             except client.rest.ApiException as e:
                 logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
