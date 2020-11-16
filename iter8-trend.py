@@ -33,6 +33,7 @@ class Experiment:
 
         if 'metadata' in e and 'namespace' in e['metadata']:
             self.namespace = e['metadata']['namespace']
+            self.kubernetes_namespace = e['metadata']['namespace']
         if 'metadata' in e and 'name' in e['metadata']:
             self.name = e['metadata']['name']
 
@@ -55,7 +56,7 @@ class Experiment:
 
         # Used by Kiali only. Initialize to unknown since this data is populated
         # by Istio and put into Prometheus
-        self.winner_app = 'unknown'
+        self.winner_app = self.service_name
         self.winner_version = 'unknown'
 
         # Defaults winner to baseline
@@ -75,7 +76,7 @@ class Experiment:
             if 'assessment' in e['status']:
                 if 'winner' in e['status']['assessment']:
                     winner = e['status']['assessment']['winner']
-                    if winner['winning_version_found'] and self.phase == 'Completed':
+                    if winner['winning_version_found'] and self.phase == 'Completed' and winner['name'] != e['status']['assessment']['baseline']['name']:
                         # Only a Completed and Successful experiment is promoted
                         self.is_completed_and_successful = True
                         if 'name' in winner:
@@ -94,12 +95,14 @@ class Experiment:
                                 self.populate_winner_data(candidate['criterion_assessments'])
                                 break
 
+
     # Populates self.winner_data
     def populate_winner_data(self, assessments):
         for assessment in assessments:
             name = assessment['id']
-            data = assessment['statistics']['value']
-            self.winner_data[name] = data
+            if 'value' in assessment['statistics']:
+                data = assessment['statistics']['value']
+                self.winner_data[name] = data
 
     # Prints an Experiment Custom Resource
     def __str__(self):
@@ -154,7 +157,8 @@ class Iter8Watcher:
         except:
             config.load_incluster_config()
         self.kubeapi = client.CustomObjectsApi()
-
+        self.appapi = client.AppsV1Api()
+        
         # All experiments in the cluster
         self.experiments = dict()
 
@@ -176,6 +180,7 @@ class Iter8Watcher:
                         exp = Experiment()
                         exp.winner_data = {}
                         exp.namespace = m['namespace']
+                        exp.kubernetes_namespace = m['namespace']
                         exp.name = m['name']
 
                         if 'baseline' in m and m['baseline'] != 'unknown':
@@ -262,6 +267,13 @@ class Iter8Watcher:
                     exp.winner_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.winner, exp)
                     exp.winner_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.winner, exp)
                     exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
+                    try:
+                        deployment = self.appapi.read_namespaced_deployment(exp.winner, exp.namespace)
+                        if 'version' in deployment.metadata.labels:
+                            exp.winner_version = deployment.metadata.labels["version"]
+                    except client.rest.ApiException as e:
+                        logger.info("Exception when calling AppsV1Api->read_namespaced_deployment: %s\n" % e)
+
                     logger.info(exp)
         except client.rest.ApiException as e:
             logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
@@ -343,21 +355,25 @@ class Iter8Watcher:
         while True:
             time.sleep(1)
 
-    def collect(self):
-        g = GaugeMetricFamily('iter8_trend', '', labels=['namespace',
-                                                         'name',
-                                                         'service_name',
-                                                         'baseline',
-                                                         'winner',
-                                                         'phase',
-                                                         'start_time',
-                                                         'time',
-                                                         'app',
-                                                         'version',
-                                                         'metric'])
-        for exp in self.experiments:
-            for metric in self.experiments[exp].winner_data:
-                g.add_metric([self.experiments[exp].namespace,
+    def doAddData(self, _g, exp, metric, withMetric):
+        if withMetric:
+            _g.add_metric([self.experiments[exp].namespace,
+                                self.experiments[exp].kubernetes_namespace,
+                                self.experiments[exp].name,
+                                self.experiments[exp].service_name,
+                                self.experiments[exp].baseline,
+                                self.experiments[exp].winner,
+                                self.experiments[exp].phase,
+                                self.experiments[exp].start_time,
+                                self.experiments[exp].end_time,
+                                self.experiments[exp].winner_app,
+                                self.experiments[exp].winner_version,
+                                metric],
+                                float(self.experiments[exp].winner_data[metric]))
+
+        else:
+            _g.add_metric([self.experiments[exp].namespace,
+                              self.experiments[exp].kubernetes_namespace,
                               self.experiments[exp].name,
                               self.experiments[exp].service_name,
                               self.experiments[exp].baseline,
@@ -366,10 +382,63 @@ class Iter8Watcher:
                               self.experiments[exp].start_time,
                               self.experiments[exp].end_time,
                               self.experiments[exp].winner_app,
-                              self.experiments[exp].winner_version,
-                              metric],
+                              self.experiments[exp].winner_version],
                              float(self.experiments[exp].winner_data[metric]))
-        yield g
+
+    def collect(self):
+        mlabels=['namespace',
+                'kubernetes_namespace',
+                'name',
+                'service_name',
+                'baseline',
+                'winner',
+                'phase',
+                'start_time',
+                'time',
+                'app',
+                'version']
+
+        thisLabel = mlabels.copy()
+        thisLabel.append('metric')
+        gAll = GaugeMetricFamily('iter8_trend', '', labels=thisLabel)
+
+        thisLabel = mlabels.copy()
+        thisLabel.append('diskmetric')
+        gDisk = GaugeMetricFamily('iter8_trend_disk', '', labels=thisLabel)
+
+        thisLabel = mlabels.copy()
+        thisLabel.append('networkmetric')
+        gNetwork = GaugeMetricFamily('iter8_trend_network', '', labels=thisLabel)
+
+        thisLabel = mlabels.copy()
+        thisLabel.append('iter8metric')
+        gCustom = GaugeMetricFamily('iter8_trend_custom', '', labels=thisLabel)
+
+        gCpu = GaugeMetricFamily('iter8_trend_cpu', '', labels=mlabels)
+
+        gMem = GaugeMetricFamily('iter8_trend_mem', '', labels=mlabels)
+
+        for exp in self.experiments:
+            for metric in self.experiments[exp].winner_data:
+
+                self.doAddData( gAll, exp, metric, True)
+
+                if metric in ('networkreadbytes', 'networkwritebytes'):
+                    self.doAddData( gNetwork, exp, metric, True)
+
+                elif metric in ('diskreadbytes', 'diskwritebytes'):
+                    self.doAddData( gDisk, exp, metric, True)
+
+                elif metric == 'cpu':
+                    self.doAddData( gCpu, exp, metric, False)
+
+                elif metric == 'mem':
+                    self.doAddData( gMem, exp, metric, False)
+
+                else :
+                    self.doAddData( gCustom, exp, metric, True)
+
+        return[gAll, gDisk, gNetwork, gCpu, gMem, gCustom]
 
     # Monitors for new Experiments in the cluster and retrieves their
     # summary metrics data from Prometheus
@@ -394,8 +463,14 @@ class Iter8Watcher:
                         exp.winner_data['diskwritebytes'] = self.query_prometheus_disk_write_bytes(exp.winner, exp)
                         exp.winner_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.winner, exp)
                         exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
-                        logger.info(exp)
+                        try:
+                            deployment = self.appapi.read_namespaced_deployment(exp.winner, exp.namespace)
+                            if 'version' in deployment.metadata.labels:
+                                exp.winner_version = deployment.metadata.labels["version"]
+                        except client.rest.ApiException as e:
+                            logger.info("Exception when calling AppsV1beta1Api->list_namespaced_deployment: %s\n" % e)
 
+                        logger.info(exp)
             except client.rest.ApiException as e:
                 logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
             except Exception as e:
