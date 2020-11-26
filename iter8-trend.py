@@ -268,12 +268,13 @@ class Iter8Watcher:
                     exp.winner_data['networkreadbytes'] = self.query_prometheus_network_read_bytes(exp.winner, exp)
                     exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
                     try:
-                        deployment = self.appapi.read_namespaced_deployment(exp.winner, exp.namespace)
-                        if 'version' in deployment.metadata.labels:
-                            exp.winner_version = deployment.metadata.labels["version"]
+                        deployment = self.appapi.read_namespaced_deployment(exp.winner, exp.namespace )
+                        if 'version' in deployment.spec.template.metadata.labels: 
+                            exp.winner_version = deployment.spec.template.metadata.labels["version"]
                     except client.rest.ApiException as e:
                         logger.info("Exception when calling AppsV1Api->read_namespaced_deployment: %s\n" % e)
-
+                    except Exception as e:
+                            logger.error(f"Unexpected Version error: {e}")
                     logger.info(exp)
         except client.rest.ApiException as e:
             logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
@@ -465,11 +466,12 @@ class Iter8Watcher:
                         exp.winner_data['networkwritebytes'] = self.query_prometheus_network_write_bytes(exp.winner, exp)
                         try:
                             deployment = self.appapi.read_namespaced_deployment(exp.winner, exp.namespace)
-                            if 'version' in deployment.metadata.labels:
-                                exp.winner_version = deployment.metadata.labels["version"]
+                            if 'version' in deployment.spec.template.metadata.labels: 
+                                exp.winner_version = deployment.spec.template.metadata.labels["version"]
                         except client.rest.ApiException as e:
                             logger.info("Exception when calling AppsV1beta1Api->list_namespaced_deployment: %s\n" % e)
-
+                        except Exception as e:
+                            logger.error(f"Unexpected version error: {e}")
                         logger.info(exp)
             except client.rest.ApiException as e:
                 logger.error(f"Exception when calling CustomObjectApi->list_cluster_custom_object: {e}")
